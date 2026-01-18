@@ -16,6 +16,11 @@ Factory.register("AirflowGauge", cls=AirflowGauge)
 Factory.register("BarGauge", cls=BarGauge)
 
 Window.size = (1280, 800)
+Window.borderless = True
+Window.fullscreen = False   # borderless + size ile daha stabil
+Window.top = 0
+Window.left = 0
+
 Window.minimum_width, Window.minimum_height = (1280, 800)
 Window.clearcolor = (0.07, 0.08, 0.10, 1)
 
