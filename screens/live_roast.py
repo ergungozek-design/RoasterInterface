@@ -32,6 +32,7 @@ class LiveRoastScreen(Screen):
     drytime_text = StringProperty("00:02")          # SAĞ PANEL: sadece HR105 mm:ss
     miltime_text = StringProperty("00:03")     # SAĞ PANEL: sadece HR105 mm:ss
     devtime_text = StringProperty("00:04")          # SAĞ PANEL: sadece HR105 mm:ss
+    ror_text = StringProperty("0.0 °C/sn")
 
     last_read = StringProperty("—")        # debug
 
@@ -49,7 +50,7 @@ class LiveRoastScreen(Screen):
 
         # ---- Modbus mapping ----
         self.START_REG = 100
-        self.QTY = 10              # HR100..HR106
+        self.QTY = 11              # HR100..HR106
         self.REG_SET = 100         # HR100
         self.REG_BT = 104          # HR104
         self.REG_TIME = 105        # HR105
@@ -57,6 +58,7 @@ class LiveRoastScreen(Screen):
         self.REG_DRYTIME = 107
         self.REG_MILTIME = 108
         self.REG_DEVTIME = 109
+        self.REG_ROR = 110
 
         # ---- client ----
         self.client = ModbusClient(port="COM5", baud=9600, slave=2, timeout=1.5)
@@ -64,6 +66,8 @@ class LiveRoastScreen(Screen):
 
         # ---- plot buffers ----
         self.xs, self.bts, self.sets = [], [], []
+        self.rors = []
+
         self.last_t = None
 
         # placeholders
@@ -252,6 +256,7 @@ class LiveRoastScreen(Screen):
         drysec = int(vals[7])          # HR105
         millsec = int(vals[8])     # HR105
         devsec = int(vals[9])  # HR105
+        ror_raw = int(vals[10])
 
         # KV bindings
         #self.set_text = str(setv)
@@ -271,6 +276,9 @@ class LiveRoastScreen(Screen):
         self.miltime_text = f"{self._mmss(millsec)}  {percent_mill} %"
         self.devtime_text = f"{self._mmss(devsec)}  {percent_dev} %"
 
+        ror = ror_raw / 10.0
+        self.ror_text = f"{ror:.1f} °C/sn".replace(".", ",")
+
         #self.drytime_text = f"{self._mmss(drysec)}  {int((drysec / tsec) * 100)} %"
         #self.miltime_text = f"{self._mmss(millsec)}  {int((millsec / tsec) * 100)} %"
         #self.devtime_text = f"{self._mmss(devsec)}  {int((devsec / tsec) * 100)} %"
@@ -281,8 +289,6 @@ class LiveRoastScreen(Screen):
         self.set_text = self._fmt_tr_temp(setv)
         self.bean_text = self._fmt_tr_temp(bt)
         self.env_text = self._fmt_tr_temp(env)
-
-
 
         self.airflow_text = f"{self._airflow_pa} Pa"
         self.airflow_subtext = "normal airflow"
@@ -302,16 +308,20 @@ class LiveRoastScreen(Screen):
         if self.xs and int(self.xs[-1]) == int(tsec):
             self.bts[-1] = bt
             self.sets[-1] = setv
+            self.rors[-1] = ror
         else:
             self.xs.append(float(tsec))
             self.bts.append(bt)
             self.sets.append(setv)
+            self.rors.append(ror)
 
         try:
             plot = self.ids.plot
             plot.x_series = self.xs[:]
             plot.bt_series = self.bts[:]
             plot.set_series = self.sets[:]
+            plot.ror_series = self.rors[:]
+
         except Exception:
             pass
 
