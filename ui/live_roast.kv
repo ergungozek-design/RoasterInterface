@@ -1,0 +1,410 @@
+#:kivy 2.2.0
+#:import dp kivy.metrics.dp
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+#:import AirflowGauge widgets.airflow_gauge.AirflowGauge
+#:import RoastPlot widgets.roast_plot.RoastPlot
+
+# =========================================================
+# BASIC STYLES
+# =========================================================
+
+<Card@BoxLayout>:
+    orientation: "vertical"
+    padding: dp(16)
+    spacing: dp(12)
+    canvas.before:
+        Color:
+            rgba: 0.10, 0.11, 0.14, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+<DarkBtn@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0,0,0,0
+    color: 0.92, 0.94, 0.98, 1
+    font_size: "18sp"
+    text_size: self.size
+    halign: "center"
+    valign: "middle"
+    bg_rgba: 0.18, 0.20, 0.25, 1
+
+    canvas.before:
+        Color:
+            rgba: self.bg_rgba
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+<DarkTab@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0,0,0,0
+    color: 0.86, 0.88, 0.92, 1
+    font_size: "18sp"
+    bold: True
+    text_size: self.size
+    halign: "center"
+    valign: "middle"
+    canvas.before:
+        Color:
+            rgba: (0.22, 0.24, 0.28, 1) if self.state == "down" else (0.14, 0.15, 0.18, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+# Clickable Label (touch hack; popup tuşlarını bozmasın diye OR FALSE)
+<ClickLabel@Label+ButtonBehavior>:
+    on_touch_down:
+        (self.dispatch("on_release") or False) if self.collide_point(*args[1].pos) else False
+
+# =========================================================
+# MAIN SCREEN
+# =========================================================
+
+<LiveRoastScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12)
+        spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: 0.07, 0.08, 0.10, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # ---------------- TOP TABS ----------------
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            spacing: dp(14)
+
+            DarkTab:
+                text: "Live Roast"
+                state: "down"
+            DarkTab:
+                text: "History"
+            DarkTab:
+                text: "Profile"
+
+        # ---------------- MAIN ROW ----------------
+        BoxLayout:
+            spacing: dp(12)
+            size_hint_y: 1
+
+            # =================================================
+            # LEFT PANEL  (SENİN ORJİNALİN)
+            # =================================================
+            Card:
+                size_hint_x: None
+                size_hint_y: 1
+                width: dp(280)
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "top"
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        spacing: dp(12)
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                        # ---- SET VALUE ----
+                        Label:
+                            text: "Set Value"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        ClickLabel:
+                            text: root.set_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 0.95, 0.85, 0.35, 1
+                            size_hint_y: None
+                            height: dp(34)
+                            on_release: root.open_set_value_keypad()
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- BEAN TEMP ----
+                        Label:
+                            text: "Bean Temp"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.bean_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 0.95, 0.60, 0.35, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- ENV TEMP ----
+                        Label:
+                            text: "Exhaust TEMP"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.env_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- EXHAUST SPEED ----
+                        Label:
+                            text: "Exhaust Speed"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.speed_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(10)
+
+                        # ---- BURNER (gauge solda) ----
+                        AnchorLayout:
+                            size_hint_y: None
+                            height: dp(180)
+                            anchor_x: "center"
+                            anchor_y: "center"
+
+                            AirflowGauge:
+                                size_hint: None, None
+                                size: dp(160), dp(160)
+                                value: root.burner_ratio
+
+                            BoxLayout:
+                                orientation: "vertical"
+                                size_hint: None, None
+                                size: dp(160), dp(50)
+                                spacing: dp(2)
+                                pos_hint: {"center_x": 0.5, "center_y": 0.45}
+
+                                Label:
+                                    text: root.burner_text
+                                    font_size: "34sp"
+                                    bold: False
+                                    color: 0.95, 0.70, 0.35, 1
+                                    halign: "center"
+                                    valign: "middle"
+                                    text_size: self.size
+
+                                Label:
+                                    text: "Burner"
+                                    font_size: "26sp"
+                                    color: 1, 1, 1, 1
+                                    halign: "center"
+                                    valign: "middle"
+                                    text_size: self.size
+
+            # =================================================
+            # CENTER PANEL  (SCROLL YOK, TAM GÖRÜNÜR)
+            # =================================================
+            Card:
+                size_hint_y: 1
+
+                RoastPlot:
+                    id: plot
+                    size_hint: 1, 1
+
+            # =================================================
+            # RIGHT PANEL
+            # =================================================
+            Card:
+                size_hint_x: None
+                size_hint_y: 1
+                width: dp(280)
+
+                AnchorLayout:
+                    anchor_x: "center"
+                    anchor_y: "top"
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        spacing: dp(12)
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                        # ---- ROASTING TIME ----
+                        Label:
+                            text: "Roasting Time"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        ClickLabel:
+                            text: root.roasttime_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 0.95, 0.85, 0.35, 1
+                            size_hint_y: None
+                            height: dp(34)
+                            on_release: root.open_set_value_keypad()
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- DRYING TIME ----
+                        Label:
+                            text: "Drying Time"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.drytime_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 0.95, 0.60, 0.35, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- MILIIARD TIME ----
+                        Label:
+                            text: "Milliard Time"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.miltime_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(20)
+
+                        # ---- DEVELOPMENT TIME ----
+                        Label:
+                            text: "Development Time"
+                            font_size: "25sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(22)
+
+                        Label:
+                            text: root.devtime_text
+                            font_size: "36sp"
+                            bold: False
+                            color: 1, 1, 1, 1
+                            size_hint_y: None
+                            height: dp(34)
+
+                        Widget:
+                            size_hint_y: None
+                            height: dp(10)
+
+                        # ---- AIR FLOW (gauge ) ----
+                        AnchorLayout:
+                            size_hint_y: None
+                            height: dp(180)
+                            anchor_x: "center"
+                            anchor_y: "center"
+
+                            AirflowGauge:
+                                size_hint: None, None
+                                size: dp(160), dp(160)
+                                value: root.burner_ratio
+
+                            BoxLayout:
+                                orientation: "vertical"
+                                size_hint: None, None
+                                size: dp(160), dp(50)
+                                spacing: dp(2)
+                                pos_hint: {"center_x": 0.5, "center_y": 0.45}
+
+                                Label:
+                                    text: root.airflow_text
+                                    font_size: "34sp"
+                                    bold: False
+                                    color: 0.95, 0.70, 0.35, 1
+                                    halign: "center"
+                                    valign: "middle"
+                                    text_size: self.size
+
+                                Label:
+                                    text: "Airflow PA"
+                                    font_size: "20sp"
+                                    color: 1, 1, 1, 1
+                                    halign: "center"
+                                    valign: "middle"
+                                    text_size: self.size
+
+
+        # ---------------- BOTTOM BUTTONS ----------------
+        BoxLayout:
+            size_hint_y: None
+            height: dp(86)
+            spacing: dp(12)
+
+            DarkBtn:
+                text: "DRUM START"
+            DarkBtn:
+                text: "BURNER START"
+            DarkBtn:
+                text: "MIXER START"
+            DarkBtn:
+                text: "COOLER START"
+            DarkBtn:
+                text: "PROFILE START"
+                on_press: root.open_profile_confirm()
+                bg_rgba: (0.85, 0.15, 0.15, 1) if root.profile_state == 1 else (0.20, 0.75, 0.30, 1)
+
+
+
+
