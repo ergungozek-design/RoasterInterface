@@ -9,15 +9,25 @@ class RoastPlot(Widget):
     x_series = ListProperty([])
     bt_series = ListProperty([])
     set_series = ListProperty([])
+    ror_series = ListProperty([])   # <-- EKLENDI
 
     W = 1200.0
     y_min = 0
     y_max = 300
 
+    # RoR 0..40 gibi küçük kaldığı için grafikte görünür yapmak:
+    # 1.0 yaparsan "ham" çizer (dipte kalır). 6.0 yaparsan 0..50 -> 0..300
+    ROR_SCALE = 5.0
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(pos=self._redraw, size=self._redraw)
-        self.bind(x_series=self._redraw, bt_series=self._redraw, set_series=self._redraw)
+        self.bind(
+            x_series=self._redraw,
+            bt_series=self._redraw,
+            set_series=self._redraw,
+            ror_series=self._redraw,   # <-- EKLENDI
+        )
 
     def _draw_text(self, text, x, y, font_size=12, color=(1, 1, 1, 0.9)):
         lbl = CoreLabel(text=text, font_size=font_size, color=color)
@@ -27,6 +37,7 @@ class RoastPlot(Widget):
     def _redraw(self, *args):
         self.canvas.clear()
         with self.canvas:
+            # Background
             Color(0.07, 0.08, 0.10, 1)
             Rectangle(pos=self.pos, size=self.size)
 
@@ -97,20 +108,33 @@ class RoastPlot(Widget):
                 col = x_major_lbl if (sec % 300 == 0) else x_minor_lbl
                 self._draw_text(f"{sec//60}m", xg - dp(10), x_label_y, font_size=12, color=col)
 
-            # Legend
+            # Legend (SET / BT / ROR)
             legend_y = self.y + dp(26)
-            legend_x = px + pw / 2 - dp(70)
+            legend_x = px + pw / 2 - dp(110)
 
+            # SET
             Color(1.00, 0.38, 0.38, 0.95)
             Rectangle(pos=(legend_x, legend_y), size=(dp(10), dp(10)))
-            self._draw_text("SET", legend_x + dp(14), legend_y - dp(2), font_size=12, color=(0.9, 0.92, 0.95, 0.95))
+            self._draw_text("SET", legend_x + dp(14), legend_y - dp(2), font_size=12,
+                            color=(0.9, 0.92, 0.95, 0.95))
 
+            # BT
             Color(0.25, 0.70, 1.00, 1.0)
             Rectangle(pos=(legend_x + dp(56), legend_y), size=(dp(10), dp(10)))
-            self._draw_text("BT", legend_x + dp(70), legend_y - dp(2), font_size=12, color=(0.9, 0.92, 0.95, 0.95))
+            self._draw_text("BT", legend_x + dp(70), legend_y - dp(2), font_size=12,
+                            color=(0.9, 0.92, 0.95, 0.95))
+
+            # ROR
+            Color(0.40, 0.95, 0.55, 0.95)
+            Rectangle(pos=(legend_x + dp(102), legend_y), size=(dp(10), dp(10)))
+            ror_lbl = "ROR" if self.ROR_SCALE == 1.0 else f"ROR x{self.ROR_SCALE:.0f}"
+            self._draw_text(ror_lbl, legend_x + dp(116), legend_y - dp(2), font_size=12,
+                            color=(0.9, 0.92, 0.95, 0.95))
 
             # plots
             if self.x_series and len(self.x_series) >= 2:
+
+                # SET
                 if self.set_series and len(self.set_series) == len(self.x_series):
                     Color(1.00, 0.38, 0.38, 0.95)
                     pts = []
@@ -118,9 +142,20 @@ class RoastPlot(Widget):
                         pts.extend([xf(sx), yf(sy)])
                     Line(points=pts, width=1.2)
 
+                # BT
                 if self.bt_series and len(self.bt_series) == len(self.x_series):
                     Color(0.25, 0.70, 1.00, 1.0)
                     pts = []
                     for bx, by in zip(self.x_series, self.bt_series):
                         pts.extend([xf(bx), yf(by)])
                     Line(points=pts, width=1.4)
+
+                # ROR
+                if self.ror_series and len(self.ror_series) == len(self.x_series):
+                    Color(0.40, 0.95, 0.55, 0.95)
+                    pts = []
+                    for rx, rv in zip(self.x_series, self.ror_series):
+                        # grafikte görünür kılmak için ölçek
+                        pts.extend([xf(rx), yf(rv * self.ROR_SCALE)])
+                    Line(points=pts, width=1.2)
+
