@@ -25,7 +25,7 @@ class LiveRoastScreen(Screen):
     env_text = StringProperty("0,0°C")           # MW2022 (x10)
 
     airflow_ratio = NumericProperty(0.56)
-    airflow_text = StringProperty("168 Pa")
+    airflow_text = StringProperty("999 Pa")
     airflow_subtext = StringProperty("normal airflow")
 
     burner_ratio = NumericProperty(0.48)
