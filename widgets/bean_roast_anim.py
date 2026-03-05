@@ -5,9 +5,20 @@ from kivy.clock import Clock
 from kivy.animation import Animation
 from kivy.properties import StringProperty, NumericProperty
 
+import os, sys
+from pathlib import Path
+
+def resource_path(rel):
+    base = getattr(sys, "_MEIPASS", str(Path(__file__).resolve().parents[1]))
+    return os.path.join(base, rel)
+
 class BeanRoastAnim(Widget):
-    green_source = StringProperty("assets/beans/bean_green_transparent.png")
-    dark_source = StringProperty("assets/beans/bean_dark_transparent.png")
+    green_source = StringProperty(resource_path("assets/beans/bean_green_transparent.png"))
+    dark_source = StringProperty(resource_path("assets/beans/bean_dark_transparent.png"))
+
+    #green_source = StringProperty("assets/beans/bean_green_transparent.png")
+    #dark_source = StringProperty("assets/beans/bean_dark_transparent.png")
+
     intensity = NumericProperty(0.8)
 
     def __init__(self, **kwargs):

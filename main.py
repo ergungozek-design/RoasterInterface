@@ -22,6 +22,16 @@ from services.modbus_tcp_client import ModbusTCPClient
 
 from widgets.status_anim import StatusAnim
 
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # ---- Factory register (KV import istemesin) ----
 Factory.register("StatusAnim", cls=StatusAnim)
@@ -49,13 +59,21 @@ class RoastDashboardApp(App):
 
     def build(self):
         # ---------------- KV dosyaları ----------------
-        Builder.load_file("ui/common.kv")
-        Builder.load_file("ui/home.kv")
-        Builder.load_file("ui/live_roast.kv")
-        Builder.load_file("ui/profile.kv")
-        Builder.load_file("ui/make_profile.kv")
-        Builder.load_file("ui/manual_control.kv")
-        Builder.load_file("ui/profile_detail_screen.kv")
+        Builder.load_file(resource_path("ui/common.kv"))
+        Builder.load_file(resource_path("ui/home.kv"))
+        Builder.load_file(resource_path("ui/live_roast.kv"))
+        Builder.load_file(resource_path("ui/profile.kv"))
+        Builder.load_file(resource_path("ui/make_profile.kv"))
+        Builder.load_file(resource_path("ui/manual_control.kv"))
+        Builder.load_file(resource_path("ui/profile_detail_screen.kv"))
+
+        #Builder.load_file("ui/common.kv")
+        #Builder.load_file("ui/home.kv")
+        #Builder.load_file("ui/live_roast.kv")
+        #Builder.load_file("ui/profile.kv")
+        #Builder.load_file("ui/make_profile.kv")
+        #Builder.load_file("ui/manual_control.kv")
+        #Builder.load_file("ui/profile_detail_screen.kv")
 
         # ---------------- ScreenManager ----------------
         sm = ScreenManager(transition=FadeTransition(duration=0.15))
