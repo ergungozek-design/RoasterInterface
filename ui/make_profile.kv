@@ -1,0 +1,1072 @@
+#:kivy 2.2.0
+#:import dp kivy.metrics.dp
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+#:import App kivy.app.App
+
+# =========================================================
+# MAKE PROFILE SCREEN
+# =========================================================
+
+<MPCard@BoxLayout>:
+    orientation: "vertical"
+    padding: dp(28)
+    spacing: dp(6)   # ✅ (ESKİ: dp(12))  -> sol panel tablo biraz yukarı gelsin diye sadece bu azaltıldı
+    canvas.before:
+        Color:
+            rgba: 0.12, 0.13, 0.16, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(26), dp(26), dp(26), dp(26)]
+
+
+<MPRowTitle@Label>:
+    font_size: "22sp"
+    bold: True
+    color: 0.85, 0.88, 0.92, 1
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+
+
+<MPUnit@Label>:
+    font_size: "20sp"
+    bold: True
+    color: 0.70, 0.72, 0.76, 1
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+
+
+<MPClickBox@ButtonBehavior+BoxLayout>:
+    _text: ""
+    _hint: ""
+    _disabled: False
+    _align: "left"   # "left" or "center"
+    _safe_text: lambda v, hint="--": (v if (v is not None and str(v).strip() != "") else hint)
+    _state: "normal"   # "normal" | "green" | "red"
+    #_green: False
+
+    size_hint_y: None
+    height: dp(48)              # ✅ 54 -> 48
+    padding: dp(16), 0
+
+    canvas.before:
+        Color:
+            rgba: (0.92, 0.93, 0.95, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(10), dp(10), dp(10), dp(10)]
+
+
+    Label:
+        text: self.parent._safe_text(self.parent._text, self.parent._hint)
+        font_size: "22sp"
+        bold: True
+        color: (0.75, 0.75, 0.75, 1) if self.parent._disabled else ((0.18, 0.70, 0.30, 1) if self.parent._state == "green" else ((0.85, 0.20, 0.20, 1) if self.parent._state == "red" else (0.40, 0.40, 0.40, 1)))
+        #color: (
+        #    (0.75, 0.75, 0.75, 1) if self.parent._disabled else
+        #    (0.18, 0.70, 0.30, 1) if self.parent._state == "green" else
+        #    (0.85, 0.20, 0.20, 1) if self.parent._state == "red" else
+        #    (0.95, 0.75, 0.20, 1) if self.parent._state == "yellow" else
+        #    (0.40, 0.40, 0.40, 1)
+        #)
+        halign: self.parent._align
+        valign: "middle"
+        text_size: self.size
+
+
+<MPDisplayBox@BoxLayout>:
+    _text: "--"
+    _safe_text: lambda v, hint="--": (v if (v is not None and str(v).strip() != "") else hint)
+
+    size_hint_y: None
+    height: dp(48)              # ✅ 54 -> 48
+    padding: dp(12), dp(6)
+
+    canvas.before:
+        Color:
+            rgba: 0.12, 0.13, 0.16, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(12), dp(12), dp(12), dp(12)]
+
+    Label:
+        text: self.parent._safe_text(self.parent._text, "--")
+        font_size: "28sp"
+        bold: True
+        color: 1.0, 0.55, 0.25, 1
+        halign: "center"
+        valign: "middle"
+        text_size: self.size
+
+
+<MPStageBtn@ButtonBehavior+BoxLayout>:
+    _text: ""
+    _bg: 0.16, 0.17, 0.20, 1
+    _disabled: False
+
+    size_hint_y: None
+    height: dp(60)
+    padding: dp(16), 0
+
+    canvas.before:
+        Color:
+            rgba: (0.10, 0.10, 0.10, 1) if self._disabled else self._bg
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18), dp(18), dp(18), dp(18)]
+
+    Label:
+        text: self.parent._text
+        font_size: "22sp"
+        bold: True
+        color: (0.45, 0.45, 0.45, 1) if self.parent._disabled else (1, 1, 1, 1)
+        halign: "center"
+        valign: "middle"
+        text_size: self.size
+
+
+# =========================================================
+# SCREEN
+# =========================================================
+
+<MakeProfileScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(5)
+        spacing: dp(10)
+
+        #canvas.before:
+        #    Color:
+        #        rgba: 0.12, 0.18, 0.28, 1
+        #        #rgba: 0.07, 0.08, 0.10, 1
+        #    Rectangle:
+        #        pos: self.pos
+        #        size: self.size
+
+        # ---------------- HEADER ----------------
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            spacing: dp(14)
+
+            DarkTab:
+                text: "⟵ Back"
+                font_size: "25sp"
+                bold: True
+                on_release: root.go_back()
+
+            DarkTab:
+                text: "Make Profile"
+                tab_key: "make_profile"
+                font_size: "25sp"
+                bold: True
+                state: "down"
+
+        # ---------------- MAIN CARD ----------------
+        MPCard:
+
+            # =================================================
+            # TOP ROW
+            # =================================================
+            BoxLayout:
+                orientation: "horizontal"
+                spacing: dp(18)
+                size_hint_y: None
+                height: dp(48) * 3 + dp(0)   # ✅ 54->48
+
+                # ---------- TOP LEFT ----------
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: dp(14)
+                    size_hint_x: 1
+
+                    #canvas.before:
+                    #    Color:
+                    #        rgba: 0.12, 0.18, 0.28, 1
+                            #rgba: 0.07, 0.08, 0.10, 1
+                    #    Rectangle:
+                    #        pos: self.pos
+                    #        size: self.size
+
+                    #canvas.before:
+                    #    Color:
+                    #        rgba: 0.12, 0.18, 0.28, 1   # ← burayı istediğin renk yap
+                    #    RoundedRectangle:
+                    #        pos: self.pos
+                    #        size: self.size
+                    #        radius: [dp(18), dp(18), dp(18), dp(18)]
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(12)
+
+                        MPRowTitle:
+                            text: "Profile"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            _text: root.selected_profile
+                            _hint: "--"
+                            _disabled: True
+                            _align: "left"
+                            size_hint_x: 1
+
+                        Widget:
+                            size_hint_x: None
+                            width: dp(120)
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(12)
+
+                        MPRowTitle:
+                            text: "Coffee Origin"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            _text: root.coffee_origin
+                            _hint: "<tap to select origin>"
+                            _disabled: False
+                            _align: "left"
+                            size_hint_x: 1
+                            on_release: root.open_origin_picker()
+
+                        BoxLayout:
+                            size_hint_x: None
+                            width: dp(120)
+                            padding: 0, 0
+
+                            canvas.before:
+                                Color:
+                                    rgba: 0.92, 0.93, 0.95, 1
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [dp(10), dp(10), dp(10), dp(10)]
+                            Image:
+                                source: root.coffee_origin_png if root.coffee_origin_png else ""
+                                allow_stretch: True
+                                keep_ratio: False
+
+                    Widget:
+                        size_hint_y: None
+                        height: dp(6)   # çok yapışmasın diye küçük nefes
+
+
+                    #Widget:
+                    #    size_hint_y: 1
+
+                # ---------- TOP RIGHT ----------
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: None
+                    width: dp(360)
+                    spacing: dp(0)
+
+                    #canvas.before:
+                    #    Color:
+                    #        rgba: 1, 0.4, 0.1, 1 # turuncu
+                    #    Rectangle:
+                    #        pos: self.pos
+                    #        size: self.size
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(10)
+
+                        Label:
+                            text: "Bean Temp"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "left"
+                            valign: "middle"
+                            text_size: self.size
+                            color: 0.85, 0.88, 0.92, 1
+                            bold: True
+                            font_size: "18sp"
+                            padding_x: dp(12)
+
+                        MPDisplayBox:
+                            _text: root.live_bean_temp
+                            size_hint_x: 1
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(10)
+
+                        Label:
+                            text: "Exhaust %"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "left"
+                            valign: "middle"
+                            text_size: self.size
+                            color: 0.85, 0.88, 0.92, 1
+                            bold: True
+                            font_size: "18sp"
+                            padding_x: dp(12)
+
+                        MPDisplayBox:
+                            _text: root.live_exhaust_pct
+                            size_hint_x: 1
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(10)
+
+                        Label:
+                            text: "Flame %"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "left"
+                            valign: "middle"
+                            text_size: self.size
+                            color: 0.85, 0.88, 0.92, 1
+                            bold: True
+                            font_size: "18sp"
+                            padding_x: dp(12)
+
+                        MPDisplayBox:
+                            _text: root.live_flame_pct
+                            size_hint_x: 1
+
+
+            Widget:
+                size_hint_y: None
+                height: dp(10)
+
+            # =================================================
+            # BOTTOM ROW
+            # =================================================
+            BoxLayout:
+                orientation: "horizontal"
+                spacing: dp(14)
+
+                # ---------------- LEFT: TABLE ----------------
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: dp(14)
+                    size_hint_x: 1
+
+                    #canvas.before:
+                    #    Color:
+                    #        rgba: 1, 0, 0, 1   # 🔴 kırmızı
+                    #    Rectangle:
+                    #        pos: self.pos
+                    #        size: self.size
+
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(44)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(44)
+
+                        MPRowTitle:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPRowTitle:
+                            text: "Temperature"
+                            size_hint_x: None
+                            width: dp(160)
+                            halign: "center"
+
+                        MPUnit:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPRowTitle:
+                            text: "Exhaust"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "center"
+
+                        MPUnit:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPRowTitle:
+                            text: "Flame"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "center"
+
+                        MPUnit:
+                            text: ""
+                            size_hint_x: 1
+
+                    # -------- ROWS 1..5 (hepsi 48) --------
+                    # ROW 1
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(48)     # ✅
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(48)
+
+                        MPRowTitle:
+                            text: "Drop Down Temp"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            id: dd_temp_box
+                            _text: root.drop_down_temp
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("drop_down_temp", "Drop Down Temp (°C)", 1, 0, 400)
+
+                        MPUnit:
+                            text: "°C"
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPClickBox:
+                            id: dd_p1_box
+                            _text: root.dd_p1
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("dd_p1", "Drop Down Exhaust (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPClickBox:
+                            id: dd_p2_box
+                            _text: root.dd_p2
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("dd_p2", "Drop Down Flame (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: 1
+
+                    # ROW 2
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(48)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(48)
+
+                        MPRowTitle:
+                            text: "Hopper Open Time"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            id: hop_time_box
+                            _text: root.hopper_open_time
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("hopper_open_time", "Hopper Open Time (sec.)", 0, 0, 999)
+
+                        MPUnit:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPClickBox:
+                            id: hop_p1_box
+                            _text: root.hop_p1
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("hop_p1", "Hopper Exhaust (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPClickBox:
+                            id: hop_p2_box
+                            _text: root.hop_p2
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("hop_p2", "Hopper Flame (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: 1
+
+                    # ROW 3
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(48)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(48)
+
+                        MPRowTitle:
+                            text: "Chaffing"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            id: ch_time_box
+                            _text: root.chaffing
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("chaffing", "Chaffing (sec.)", 0, 0, 999)
+
+                        MPUnit:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPClickBox:
+                            id: ch_p1_box
+                            _text: root.ch_p1
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("ch_p1", "Chaffing Exhaust (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPClickBox:
+                            id: ch_p2_box
+                            _text: root.ch_p2
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("ch_p2", "Chaffing Flame (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: 1
+
+                    # ROW 4
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(48)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(48)
+
+                        MPRowTitle:
+                            text: "Chaffing Time"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            id: ct_time_box
+                            _text: root.chaffing_time
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("chaffing_time", "Chaffing Time (sec.)", 0, 0, 999)
+
+                        MPUnit:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPClickBox:
+                            id: ct_p1_box
+                            _text: root.ct_p1
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("ct_p1", "Chaffing Time Exhaust (%)", 0, 0, 100)
+
+                        #Widget:
+                        #    size_hint_x: None
+                        #    width: dp(140)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPClickBox:
+                            id: ct_p2_box
+                            _text: root.ct_p2
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("ct_p2", "Chaffing Time Flame (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: 1
+
+                    # ROW 5
+                    GridLayout:
+                        cols: 7
+                        spacing: dp(10)
+                        row_default_height: dp(48)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: dp(48)
+
+                        MPRowTitle:
+                            text: "First Crack Temp"
+                            size_hint_x: None
+                            width: dp(220)
+
+                        MPClickBox:
+                            id: fc_temp_box
+                            _text: root.first_crack_temp
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("first_crack_temp", "First Crack Temp (°C)", 1, 0, 400)
+
+                        MPUnit:
+                            text: "°C"
+                            size_hint_x: None
+                            width: dp(60)
+
+                        MPClickBox:
+                            id: fc_p1_box
+                            _text: root.fc_p1
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("fc_p1", "First Crack Exhaust (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        MPClickBox:
+                            id: fc_p2_box
+                            _text: root.fc_p2
+                            _hint: ""
+                            _disabled: False
+                            _align: "center"
+                            size_hint_x: None
+                            width: dp(140)
+                            on_release: root.open_numeric("fc_p2", "First Crack Flame (%)", 0, 0, 100)
+
+                        MPUnit:
+                            text: "%"
+                            size_hint_x: 1
+
+                    # =========================================================
+                    # STD/DEV EXTRA AREA (2-row reserved space)
+                    # =========================================================
+                    FloatLayout:
+                        size_hint_y: None
+                        height: dp(48) * 2
+
+                        # -------------------------
+                        # STD (Second Crack + Drop Out) -> only STD
+                        # -------------------------
+                        GridLayout:
+                            cols: 7
+                            spacing: dp(10)
+                            row_default_height: dp(48)
+                            row_force_default: True
+
+                            size_hint: 1, None
+                            height: (dp(48) * 2) if int(root.profile_mode) == 0 else 0
+                            pos: self.parent.pos
+
+                            opacity: 1 if int(root.profile_mode) == 0 else 0
+                            disabled: True if int(root.profile_mode) == 1 else False
+
+                            # ROW 6 (Second Crack)
+                            MPRowTitle:
+                                text: "Second Crack Temp"
+                                size_hint_x: None
+                                width: dp(220)
+
+                            MPClickBox:
+                                id: sc_temp_box
+                                _text: root.second_crack_temp
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_numeric("second_crack_temp", "Second Crack Temp (°C)", 1, 0, 400)
+
+                            MPUnit:
+                                text: "°C"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            MPClickBox:
+                                id: sc_p1_box
+                                _text: root.sc_p1
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(140)
+                                on_release: root.open_numeric("sc_p1", "Second Crack Exhaust (%)", 0, 0, 100)
+
+                            MPUnit:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            MPClickBox:
+                                id: sc_p2_box
+                                _text: root.sc_p2
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(140)
+                                on_release: root.open_numeric("sc_p2", "Second Crack Flame (%)", 0, 0, 100)
+
+                            MPUnit:
+                                text: "%"
+                                size_hint_x: 1
+
+                            # ROW 7 (Drop Out)
+                            MPRowTitle:
+                                text: "DROP OUT TEMP"
+                                size_hint_x: None
+                                width: dp(220)
+
+                            MPClickBox:
+                                id: do_temp_box
+                                _text: root.drop_out_temp
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_numeric("drop_out_temp", "Drop Out Temp (°C)", 1, 0, 400)
+
+                            MPUnit:
+                                text: "°C"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            MPClickBox:
+                                id: do_p1_box
+                                _text: root.do_p1
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(140)
+                                on_release: root.open_numeric("do_p1", "Drop Out Exhaust (%)", 0, 0, 100)
+
+                            MPUnit:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            MPClickBox:
+                                id: do_p2_box
+                                _text: root.do_p2
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(140)
+                                on_release: root.open_numeric("do_p2", "Drop Out Flame (%)", 0, 0, 100)
+
+                            MPUnit:
+                                text: "%"
+                                size_hint_x: 1
+
+                        # -------------------------
+                        # DEV (Development Time) -> only DEV
+                        # -------------------------
+                        GridLayout:
+                            cols: 7
+                            spacing: dp(10)
+                            row_default_height: dp(48)
+                            row_force_default: True
+
+                            size_hint: 1, None
+                            height: dp(48) if int(root.profile_mode) == 1 else 0
+                            pos: self.parent.pos
+
+                            opacity: 1 if int(root.profile_mode) == 1 else 0
+                            disabled: True if int(root.profile_mode) == 0 else False
+
+                            MPRowTitle:
+                                text: "Development Time"
+                                size_hint_x: None
+                                width: dp(220)
+
+                            MPClickBox:
+                                id: dev_min_box
+                                _text: root.dev_time_min if root.dev_time_min else "00"
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_dev_min()
+
+                            MPUnit:
+                                text: "min"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            MPClickBox:
+                                id: dev_sec_box
+                                _text: root.dev_time_sec if root.dev_time_sec else "00"
+                                _hint: ""
+                                _disabled: False
+                                _align: "center"
+                                size_hint_x: None
+                                width: dp(140)
+                                on_release: root.open_dev_sec()
+
+                            MPUnit:
+                                text: "sec"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            Widget:
+                                size_hint_x: None
+                                width: dp(140)
+
+                            Widget:
+                                size_hint_x: 1
+
+                # ---------------- RIGHT: BUTTONS ----------------
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: None
+                    width: dp(360)
+                    spacing: dp(12)
+
+                    #canvas.before:
+                    #    Color:
+                    #        rgba: 0.6, 0.0, 0.8, 1   # 💜 mor
+                    #    Rectangle:
+                    #        pos: self.pos
+                    #        size: self.size
+
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(48)        # ✅
+                        spacing: dp(20)
+
+                        Label:
+                            text: "Development"
+                            size_hint_x: None
+                            width: dp(140)
+                            halign: "left"
+                            valign: "middle"
+                            text_size: self.size
+                            color: 0.85, 0.88, 0.92, 1
+                            bold: True
+                            font_size: "18sp"
+                            padding_x: dp(12)
+
+                        MPDisplayBox:
+                            _text: "{:02d} : {:02d}".format(int(root.dev_min) if str(root.dev_min).isdigit() else 0, int(root.dev_sec) if str(root.dev_sec).isdigit() else 0)
+                            size_hint_x: 1
+
+                        #MPDisplayBox:
+                        #    _text: (root.dev_min if root.dev_min else "--") + " : " + (root.dev_sec if root.dev_sec else "--")
+                        #    size_hint_x: 1
+
+                    # ---------------- TOP: stage buttons ----------------
+                    GridLayout:
+                        cols: 1
+                        spacing: dp(12)
+                        size_hint_y: None
+                        row_default_height: dp(60)
+                        row_force_default: True
+                        height: self.minimum_height
+
+                        # Drop Down
+                        MPStageBtn:
+                            _text: "Drop Down"
+                            _bg: root.dd_bg
+                            _disabled: root.dd_disabled
+                            on_release: root.on_drop_down_stage() if not self._disabled else None
+
+                        # First Crack
+                        MPStageBtn:
+                            _text: "First Crack"
+                            _bg: root.fc_bg
+                            _disabled: root.fc_disabled
+                            on_release: root.on_first_crack_stage() if not self._disabled else None
+
+
+                        # SLOT-3: STD'de Second Crack, DEV'de Drop Out aynı slotta
+                        FloatLayout:
+                            size_hint_y: None
+                            height: dp(60)
+
+                            # --- STD: Second Crack ---
+                            MPStageBtn:
+                                size_hint: 1, None
+                                height: dp(60) if int(root.profile_mode) == 0 else 0
+                                pos_hint: {"x": 0, "y": 0}
+                                _text: "Second Crack"
+                                _bg: root.sc_bg
+                                _disabled: root.sc_disabled
+                                opacity: 1 if int(root.profile_mode) == 0 else 0
+                                on_release: root.on_second_crack_stage() if not self._disabled else None
+
+                            # --- DEV: Drop Out ---
+                            MPStageBtn:
+                                size_hint: 1, None
+                                height: dp(60) if int(root.profile_mode) == 1 else 0
+                                pos_hint: {"x": 0, "y": 0}
+                                _text: "Drop Out Coffee"
+                                _bg: root.do_bg
+                                _disabled: root.do_disabled
+                                opacity: 1 if int(root.profile_mode) == 1 else 0
+                                on_release: root.on_drop_out_stage() if not self._disabled else None
+
+                        # SLOT-3: STD'de Second Crack, DEV'de Drop Out aynı slotta
+                        #FloatLayout:
+                        #    size_hint_y: None
+                        #    height: dp(60)
+
+                        #    MPStageBtn:
+                        #        size_hint: 1, 1
+                        #        pos_hint: {"x": 0, "y": 0}
+                        #        _text: "Second Crack"
+                        #        _bg: root.sc_bg
+                        #        _disabled: (root.sc_disabled or int(root.profile_mode) == 1)
+                        #        opacity: 1 if int(root.profile_mode) == 0 else 0
+                        #        disabled: True if int(root.profile_mode) == 1 else False
+                        #        on_release: root.on_second_crack_stage() if not self._disabled else None
+
+
+                        #    MPStageBtn:
+                        #        size_hint: 1, 1
+                        #        pos_hint: {"x": 0, "y": 0}
+                        #        _text: "Drop Out Coffee"
+                        #        _bg: root.do_bg
+                        #        _disabled: (root.do_disabled or int(root.profile_mode) == 0)
+                        #        opacity: 1 if int(root.profile_mode) == 1 else 0
+                        #        disabled: True if int(root.profile_mode) == 0 else False
+                        #        on_release: root.on_drop_out_stage() if not self._disabled else None
+
+
+                        # SLOT-4: Drop Out (STD'de burada), DEV'de boş slot
+                        FloatLayout:
+                            size_hint_y: None
+                            height: dp(60)
+
+                            MPStageBtn:
+                                size_hint: 1, None
+                                height: dp(60) if int(root.profile_mode) == 0 else 0
+                                pos_hint: {"x": 0, "y": 0}
+                                _text: "Drop Out Coffee"
+                                _bg: root.do_bg
+                                _disabled: root.do_disabled
+                                opacity: 1 if int(root.profile_mode) == 0 else 0
+                                on_release: root.on_drop_out_stage() if not self._disabled else None
+
+                            Widget:
+                                size_hint: 1, None
+                                height: dp(60) if int(root.profile_mode) == 1 else 0
+                                pos_hint: {"x": 0, "y": 0}
+                                opacity: 1 if int(root.profile_mode) == 1 else 0
+
+
+                        # SLOT-4: Drop Out (STD'de burada), DEV'de boş slot
+                        #FloatLayout:
+                        #    size_hint_y: None
+                        #    height: dp(60)
+
+                        #    MPStageBtn:
+                        #        size_hint: 1, 1
+                        #        pos_hint: {"x": 0, "y": 0}
+                        #        _text: "Drop Out Coffee"
+                        #        _bg: root.do_bg
+                        #        _disabled: (root.do_disabled or int(root.profile_mode) == 1)
+                        #        opacity: 1 if int(root.profile_mode) == 0 else 0
+                        #        disabled: True if int(root.profile_mode) == 1 else False
+                        #        on_release: root.on_drop_out_stage() if not self._disabled else None
+
+                        #    Widget:
+                        #        size_hint: 1, 1
+                        #        pos_hint: {"x": 0, "y": 0}
+                        #        opacity: 1 if int(root.profile_mode) == 1 else 0
+                        #        disabled: True
+
+                    # ---------------- MIDDLE: filler (Save/End'i alta iter) ----------------
+                    Widget:
+                        size_hint_y: 1
+
+                    # ---------------- BOTTOM: Save / End (fixed) ----------------
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint_y: None
+                        height: dp(60) + dp(12) + dp(60)
+                        spacing: dp(12)
+
+                        MPStageBtn:
+                            _text: "Save"
+                            _bg: (0.18, 0.20, 0.25, 1)
+                            _disabled: False
+                            on_release: root.save_make_profile()
+
+                        MPStageBtn:
+                            _text: "End Profile"
+                            _bg: (0.18, 0.20, 0.25, 1)
+                            _disabled: False
+                            on_release: root.end_profile()

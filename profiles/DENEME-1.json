@@ -1,0 +1,26 @@
+{
+  "profile_name": "DENEME-1",
+  "saved_at": "2026-01-26T21:15:18",
+  "values": {
+    "dd_temp": "1,0",
+    "dd_exh": "123",
+    "dd_flame": "123",
+    "hop_time": "2",
+    "hop_exh": "123",
+    "hop_flame": "123",
+    "chaf_time": "3",
+    "chaf_exh": "123",
+    "chaf_flame": "123",
+    "chaf2_time": "4",
+    "chaf2_flame": "123",
+    "fc_temp": "5,0",
+    "fc_exh": "123",
+    "fc_flame": "123",
+    "sc_temp": "6,0",
+    "sc_exh": "123",
+    "sc_flame": "123",
+    "drop_temp": "7,0",
+    "drop_exh": "123",
+    "drop_flame": "123"
+  }
+}

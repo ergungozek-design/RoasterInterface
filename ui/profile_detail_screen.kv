@@ -1,0 +1,699 @@
+#:kivy 2.2.0
+#:import dp kivy.metrics.dp
+#:import BeanRoastAnim widgets.bean_roast_anim.BeanRoastAnim
+
+
+<RowTitle@Label>:
+    font_size: "20sp"
+    bold: True
+    color: 0.70, 0.72, 0.75, 1
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+
+<UnitLabel@Label>:
+    font_size: "18sp"
+    bold: True
+    color: 0.55, 0.58, 0.62, 1
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+
+<ValueBox@Button>:
+    font_size: "20sp"
+    bold: True
+    color: 0.10, 0.10, 0.12, 1
+    background_normal: ""
+    background_down: ""
+    background_color: 0, 0, 0, 0
+    halign: "center"
+    valign: "middle"
+    text_size: self.size
+    canvas.before:
+        Color:
+            rgba: 0.92, 0.93, 0.95, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(6), dp(6), dp(6), dp(6)]
+
+<NameBox@Button>:
+    font_size: "20sp"
+    bold: True
+    color: 0.10, 0.10, 0.12, 1
+    background_normal: ""
+    background_down: ""
+    background_color: 0, 0, 0, 0
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+    padding: dp(14), dp(10)
+    canvas.before:
+        Color:
+            rgba: 0.92, 0.93, 0.95, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(6), dp(6), dp(6), dp(6)]
+
+
+<ProfileDetailScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12), dp(6), dp(12), dp(12)
+        spacing: dp(6)
+
+        canvas.before:
+            Color:
+                rgba: 0.07, 0.08, 0.10, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(56)
+            spacing: dp(12)
+
+            DarkTab:
+                text: "← Back"
+                font_size: "25sp"
+                bold: True
+                color: 1, 1, 1, 1
+                on_release: root.exit_screen()
+
+            DarkTab:
+                text: root.title_text if root.title_text else "Profile"
+                font_size: "25sp"
+                bold: True
+                color: 1, 1, 1, 1
+                state: "down"
+
+        Card:
+            padding: dp(48), dp(4), dp(24), dp(24)
+
+            BoxLayout:
+                orientation: "horizontal"
+                spacing: dp(18)
+
+                # =========================================================
+                # LEFT SIDE (TABLE)
+                # =========================================================
+                BoxLayout:
+                    orientation: "vertical"
+                    spacing: dp(12)
+                    # ✅ KRİTİK: Sol panel Card yüksekliğini doldursun ki yukarı yapışsın
+                    size_hint_y: 1
+                    padding: 0, dp(28), 0, 0
+
+                    GridLayout:
+                        cols: 8
+                        spacing: dp(10)
+                        size_hint_y: None
+                        height: dp(54)
+                        row_default_height: dp(54)
+                        row_force_default: True
+
+                        RowTitle:
+                            text: "Profile Name"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        NameBox:
+                            text: root.profile_name if root.profile_name else "<tap to enter name>"
+                            size_hint_x: None
+                            width: dp(520)
+                            on_release: root.open_name_keypad()
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: 1
+
+                    GridLayout:
+                        cols: 8
+                        spacing: dp(10)
+                        size_hint_y: None
+                        height: dp(60)
+                        row_default_height: dp(60)
+                        row_force_default: True
+
+                        RowTitle:
+                            text: "Coffee Origin"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        NameBox:
+                            text: root.coffee_origin if root.coffee_origin else "<tap to select origin>"
+                            size_hint_x: None
+                            width: dp(380)
+                            on_release: root.open_origin_picker()
+
+                        Image:
+                            source: root.coffee_origin_png if root.coffee_origin_png else ""
+                            size_hint_x: None
+                            width: dp(150)
+                            allow_stretch: True
+                            keep_ratio: True
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: 1
+
+                    # =========================================================
+                    # HEADER + ROWS 1..5
+                    # =========================================================
+                    GridLayout:
+                        cols: 8
+                        spacing: dp(10), dp(16)
+                        row_default_height: dp(48)
+                        row_force_default: True
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                        RowTitle:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(240)
+
+                        RowTitle:
+                            text: "Temperature"
+                            size_hint_x: None
+                            width: dp(160)
+                            halign: "center"
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(60)
+
+                        RowTitle:
+                            text: "Exhaust"
+                            size_hint_x: None
+                            width: dp(120)
+                            halign: "center"
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(30)
+
+                        RowTitle:
+                            text: "Flame"
+                            size_hint_x: None
+                            width: dp(120)
+                            halign: "center"
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+                            size_hint_x: 1
+
+                        # ROW 1
+                        RowTitle:
+                            text: "Drop Down Temp"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        ValueBox:
+                            text: root.drop_down_temp
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("drop_down_temp", "Drop Down Temp (°C)", 1, 0, 400)
+
+                        UnitLabel:
+                            text: "°C"
+                            size_hint_x: None
+                            width: dp(60)
+
+                        ValueBox:
+                            text: root.dd_p1
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("dd_p1", "Drop Down Exhaust (%)", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        ValueBox:
+                            text: root.dd_p2
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("dd_p2", "Drop Down Flame (%)", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+
+                        # ROW 2
+                        RowTitle:
+                            text: "Hopper Open Time"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        ValueBox:
+                            text: root.hopper_open_time
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("hopper_open_time", "Hopper Open Time (sec.)", 0, 0, 999)
+
+                        UnitLabel:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        ValueBox:
+                            text: root.hop_p1
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("hop_p1", "Hopper Exhaust (%)", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        ValueBox:
+                            text: root.hop_p2
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("hop_p2", "Hopper Flame (%)", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+
+                        # ROW 3
+                        RowTitle:
+                            text: "Chaffing"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        ValueBox:
+                            text: root.chaffing
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("chaffing", "Chaffing (sec.)", 0, 0, 999)
+
+                        UnitLabel:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        ValueBox:
+                            text: root.ch_p1
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("ch_p1", "Chaffing Exhaust (%)  MW701", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        ValueBox:
+                            text: root.ch_p2
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("ch_p2", "Chaffing Flame (%)  MW607", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+
+                        # ROW 4
+                        RowTitle:
+                            text: "Chaffing Time"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        ValueBox:
+                            text: root.chaffing_time
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("chaffing_time", "Chaffing Time (sec.)", 0, 0, 999)
+
+                        UnitLabel:
+                            text: "sec."
+                            size_hint_x: None
+                            width: dp(60)
+
+                        # ✅ YENİ: Chaffing Time Exhaust %
+                        ValueBox:
+                            text: root.ct_p1
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("ct_p1", "Chaffing Time Exhaust (%)  MW703", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        #UnitLabel:
+                        #    text: ""
+                        #    size_hint_x: None
+                        #    width: dp(120)
+
+                        #UnitLabel:
+                        #    text: ""
+                        #    size_hint_x: None
+                        #    width: dp(30)
+
+                        ValueBox:
+                            text: root.ct_p2
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("ct_p2", "Chaffing Time Flame (%)  MW602", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+
+                        # ROW 5
+                        RowTitle:
+                            text: "First Crack Temp"
+                            size_hint_x: None
+                            width: dp(240)
+
+                        ValueBox:
+                            text: root.first_crack_temp
+                            size_hint_x: None
+                            width: dp(160)
+                            on_release: root.open_numeric("first_crack_temp", "First Crack Temp (°C)", 1, 0, 400)
+
+                        UnitLabel:
+                            text: "°C"
+                            size_hint_x: None
+                            width: dp(60)
+
+                        ValueBox:
+                            text: root.fc_p1
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("fc_p1", "First Crack Exhaust (%)  MW592", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        ValueBox:
+                            id: fc_flame
+                            text: root.fc_p2
+                            size_hint_x: None
+                            width: dp(120)
+                            on_release: root.open_numeric("fc_p2", "First Crack Flame (%)", 0, 0, 100)
+
+                        UnitLabel:
+                            text: "%"
+                            size_hint_x: None
+                            width: dp(30)
+
+                        UnitLabel:
+                            text: ""
+
+                    # =========================================================
+                    # STD/DEV EXTRA AREA (2-row reserved space)
+                    # =========================================================
+                    FloatLayout:
+                        size_hint_y: None
+                        height: dp(48) * 2
+
+                        # -------------------------
+                        # STD (Second Crack + Drop Out) -> sadece STD modda
+                        # -------------------------
+                        GridLayout:
+                            cols: 8
+                            spacing: dp(10)
+                            row_default_height: dp(48)
+                            row_force_default: True
+
+                            size_hint: 1, None
+                            height: (dp(48) * 2) if root.profile_mode != "dev" else 0
+                            pos: self.parent.pos
+
+                            opacity: 1 if root.profile_mode != "dev" else 0
+                            disabled: True if root.profile_mode == "dev" else False
+
+                            # ROW 6 (Second Crack)
+                            RowTitle:
+                                text: "Second Crack Temp"
+                                size_hint_x: None
+                                width: dp(240)
+
+                            ValueBox:
+                                text: root.second_crack_temp
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_numeric("second_crack_temp", "Second Crack Temp (°C)", 1, 0, 400)
+
+                            UnitLabel:
+                                text: "°C"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            ValueBox:
+                                text: root.sc_p1
+                                size_hint_x: None
+                                width: dp(120)
+                                on_release: root.open_numeric("sc_p1", "Second Crack Exhaust (%)", 0, 0, 100)
+
+                            UnitLabel:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            ValueBox:
+                                id: sc_flame
+                                text: root.sc_p2
+                                size_hint_x: None
+                                width: dp(120)
+                                on_release: root.open_numeric("sc_p2", "Second Crack Flame (%)", 0, 0, 100)
+
+                            UnitLabel:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            UnitLabel:
+                                text: ""
+
+                            # ROW 7 (Drop Out)
+                            RowTitle:
+                                text: "DROP OUT TEMP"
+                                size_hint_x: None
+                                width: dp(240)
+
+                            ValueBox:
+                                text: root.drop_out_temp
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_numeric("drop_out_temp", "DROP OUT TEMP (°C)", 1, 0, 400)
+
+                            UnitLabel:
+                                text: "°C"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            ValueBox:
+                                text: root.do_p1
+                                size_hint_x: None
+                                width: dp(120)
+                                on_release: root.open_numeric("do_p1", "Drop Out Exhaust (%)", 0, 0, 100)
+
+                            UnitLabel:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            ValueBox:
+                                id: do_flame
+                                text: root.do_p2
+                                size_hint_x: None
+                                width: dp(120)
+                                on_release: root.open_numeric("do_p2", "Drop Out Flame (%)", 0, 0, 100)
+
+                            UnitLabel:
+                                text: "%"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            UnitLabel:
+                                text: ""
+
+                        # -------------------------
+                        # DEV (Development Time) -> sadece DEV modda
+                        # Bu satır üst sıraya oturur (Second Crack satırının yerine)
+                        # -------------------------
+                        GridLayout:
+                            cols: 8
+                            spacing: dp(10)
+                            row_default_height: dp(48)
+                            row_force_default: True
+
+                            size_hint: 1, None
+                            height: dp(48) if root.profile_mode == "dev" else 0
+                            pos: self.parent.pos
+
+                            opacity: 1 if root.profile_mode == "dev" else 0
+                            disabled: True if root.profile_mode != "dev" else False
+
+                            RowTitle:
+                                text: "Development Time"
+                                size_hint_x: None
+                                width: dp(240)
+
+                            ValueBox:
+                                text: root.dev_time_min if root.dev_time_min else "00"
+                                size_hint_x: None
+                                width: dp(160)
+                                on_release: root.open_dev_min()
+
+                            UnitLabel:
+                                text: "min"
+                                size_hint_x: None
+                                width: dp(60)
+
+                            ValueBox:
+                                text: root.dev_time_sec if root.dev_time_sec else "00"
+                                size_hint_x: None
+                                width: dp(120)
+                                on_release: root.open_dev_sec()
+
+                            UnitLabel:
+                                text: "sec"
+                                size_hint_x: None
+                                width: dp(30)
+
+                            UnitLabel:
+                                text: ""
+                                size_hint_x: None
+                                width: dp(120)
+
+                            UnitLabel:
+                                text: ""
+                                size_hint_x: None
+                                width: dp(30)
+
+                            UnitLabel:
+                                text: ""
+
+
+                    # ✅ spacer artık doğru yerde ve doğru çalışır:
+                    Widget:
+                        size_hint_y: 1
+
+                # =========================================================
+                # RIGHT SIDE (ANIMATION + BUTTONS)
+                # =========================================================
+                FloatLayout:
+                    size_hint_x: None
+                    width: dp(380)
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint: None, None
+                        width: dp(320)
+                        height: dp(300)
+                        spacing: dp(12)
+                        right: self.parent.right - dp(18)
+                        top: self.parent.top - dp(18)
+
+                        BoxLayout:
+                            orientation: "horizontal"
+                            size_hint_y: None
+                            height: dp(42)
+                            spacing: dp(10)
+
+                            Button:
+                                text: "Traditional"
+                                size_hint_x: None
+                                width: dp(150)
+                                bold: True
+                                font_size: "16sp"
+                                background_normal: ""
+                                background_down: ""
+                                background_color: (0.25, 0.60, 0.95, 1) if root.profile_mode != "dev" else (0.18, 0.19, 0.22, 1)
+                                color: (1, 1, 1, 1)
+                                on_release: root.set_profile_mode("standard")
+
+                            Button:
+                                text: "Development"
+                                size_hint_x: None
+                                width: dp(150)
+                                bold: True
+                                font_size: "16sp"
+                                background_normal: ""
+                                background_down: ""
+                                background_color: (0.25, 0.60, 0.95, 1) if root.profile_mode == "dev" else (0.18, 0.19, 0.22, 1)
+                                color: (1, 1, 1, 1)
+                                on_release: root.set_profile_mode("dev")
+
+                        FloatLayout:
+                            size_hint: None, None
+                            width: dp(340)
+                            height: dp(240)
+
+                            BeanRoastAnim:
+                                id: roast_anim
+                                size_hint: None, None
+                                size: dp(340), dp(220)
+                                pos_hint: {"center_x": 0.5, "center_y": 0.1}
+                                green_source: "assets/beans/bean_green_transparent.png"
+                                dark_source: "assets/beans/bean_dark_transparent.png"
+                                intensity: 0.8
+
+                    BoxLayout:
+                        orientation: "vertical"
+                        size_hint: None, None
+                        width: dp(320)
+                        height: dp(60) * 3 + dp(16) * 2
+                        spacing: dp(16)
+                        right: self.parent.right - dp(18)
+                        y: self.parent.y + dp(34)
+
+                        DarkTab:
+                            text: "Send To PLC"
+                            size_hint_y: None
+                            height: dp(60)
+                            font_size: "22sp"
+                            bold: True
+                            on_release: root.confirm_send_to_plc()
+
+                        DarkTab:
+                            text: "Save"
+                            size_hint_y: None
+                            height: dp(60)
+                            font_size: "22sp"
+                            bold: True
+                            on_release: root.save_profile()
+
+                        DarkTab:
+                            text: "Exit"
+                            size_hint_y: None
+                            height: dp(60)
+                            font_size: "22sp"
+                            bold: True
+                            on_release: root.exit_screen()
