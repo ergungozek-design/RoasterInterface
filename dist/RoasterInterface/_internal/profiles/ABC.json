@@ -1,0 +1,23 @@
+{
+  "drop_down_temp": 220.0,
+  "first_crack_temp": 180.0,
+  "second_crack_temp": 190.0,
+  "drop_out_temp": 200.0,
+  "hopper_open_time": 15,
+  "chaffing": 45,
+  "chaffing_time": 30,
+  "dd_p1": null,
+  "dd_p2": null,
+  "hop_p1": null,
+  "hop_p2": null,
+  "ch_p1": null,
+  "ch_p2": null,
+  "ct_p1": null,
+  "ct_p2": null,
+  "fc_p1": null,
+  "fc_p2": null,
+  "sc_p1": null,
+  "sc_p2": null,
+  "do_p1": null,
+  "do_p2": null
+}

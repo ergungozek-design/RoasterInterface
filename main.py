@@ -19,11 +19,16 @@ from widgets.bar_gauge import BarGauge
 
 # ✅ Modbus
 from services.modbus_tcp_client import ModbusTCPClient
-
 from widgets.status_anim import StatusAnim
+
+from kivy.uix.popup import Popup
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
 
 import sys
 import os
+
 
 def resource_path(relative_path):
     try:
@@ -109,6 +114,50 @@ class RoastDashboardApp(App):
 
         sm.current = "home"
         return sm
+
+    def show_shutdown_popup(self):
+        layout = BoxLayout(orientation="vertical", spacing=20, padding=20)
+
+        msg = Label(text="Shutdown Computer ?")
+        btn_row = BoxLayout(spacing=20, size_hint_y=None, height=50)
+
+        yes_btn = Button(text="Yes")
+        no_btn = Button(text="Cancel")
+
+        btn_row.add_widget(yes_btn)
+        btn_row.add_widget(no_btn)
+
+        layout.add_widget(msg)
+        layout.add_widget(btn_row)
+
+        popup = Popup(
+            title="Shutdown",
+            content=layout,
+            size_hint=(None, None),
+            size=(420, 220),
+            auto_dismiss=False
+        )
+
+        yes_btn.bind(on_press=lambda *_: self._do_shutdown(popup))
+        no_btn.bind(on_press=lambda *_: popup.dismiss())
+
+        popup.open()
+
+    def _do_shutdown(self, popup):
+        # popup kapan
+        try:
+            popup.dismiss()
+        except Exception:
+            pass
+
+        # Uygulamayı kapat (on_stop tetiklenir, modbus close olur)
+        try:
+            self.stop()
+        except Exception:
+            pass
+
+        # Windows'u kapat (1 sn gecikme güvenli)
+        os.system("shutdown /s /t 1")
 
     def on_stop(self):
         # Uygulama kapanırken

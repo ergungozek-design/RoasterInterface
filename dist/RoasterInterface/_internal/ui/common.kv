@@ -1,0 +1,65 @@
+#:kivy 2.2.0
+#:import dp kivy.metrics.dp
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+
+# =========================================================
+# BASIC STYLES (ORTAK)
+# =========================================================
+
+<Card@BoxLayout>:
+    orientation: "vertical"
+    padding: dp(16)
+    spacing: dp(12)
+    canvas.before:
+        Color:
+            rgba: 0.10, 0.11, 0.14, 1
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+<DarkBtn@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0,0,0,0
+    color: 0.92, 0.94, 0.98, 1
+    font_size: "18sp"
+    text_size: self.size
+    halign: "center"
+    valign: "middle"
+    bg_rgba: 0.18, 0.20, 0.25, 1
+
+    canvas.before:
+        Color:
+            rgba: self.bg_rgba
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+# ✅ TAB: aktif olanı app.active_tab ile boya
+<DarkTab@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0,0,0,0
+    color: 0.86, 0.88, 0.92, 1
+    font_size: "18sp"
+    bold: True
+    text_size: self.size
+    halign: "center"
+    valign: "middle"
+
+    tab_key: ""   # "live" / "history" / "profile" / "manual"
+
+    canvas.before:
+        Color:
+            rgba: (0.22, 0.24, 0.28, 1) if self.tab_key == app.active_tab else (0.14, 0.15, 0.18, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18),]
+
+# Clickable Label
+<ClickLabel@Label+ButtonBehavior>:
+    on_touch_down:
+        (self.dispatch("on_release") or False) if self.collide_point(*args[1].pos) else False

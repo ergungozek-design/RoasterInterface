@@ -35,6 +35,19 @@
             spacing: dp(14)
 
             DarkTab:
+                tab_key: "home"
+                size_hint_x: None
+                width: dp(80)
+                on_release: root.manager.current = "home"
+
+                Image:
+                    source: "assets/icons/home.png"
+                    center_x: self.parent.center_x
+                    center_y: self.parent.center_y
+                    size_hint: None, None
+                    size: dp(28), dp(28)
+
+            DarkTab:
                 text: "Manuel Control"
                 tab_key: "manual"
                 font_size: "25sp"

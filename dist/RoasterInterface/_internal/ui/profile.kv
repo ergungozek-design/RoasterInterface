@@ -1,0 +1,142 @@
+#:kivy 2.2.0
+#:import dp kivy.metrics.dp
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+
+# ---------------------------------------------------------
+# Tile (Folder / File)
+# ---------------------------------------------------------
+<FolderTile@ButtonBehavior+BoxLayout>:
+    orientation: "vertical"
+    padding: dp(12)
+    spacing: dp(8)
+    size_hint: 1, 1
+
+    # python’dan set ediliyor
+    display_name: ""
+    icon_source: ""
+    empty_icon_source: ""
+    is_empty: True
+
+    canvas.before:
+        Color:
+            rgba: (0.18, 0.20, 0.25, 1) if not root.is_empty else (0.12, 0.13, 0.15, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(18), dp(18), dp(18), dp(18)]
+
+    Widget:
+        size_hint_y: 0.15
+
+    Image:
+        # doluysa icon_source, boşsa empty_icon_source
+        source: root.icon_source if not root.is_empty else root.empty_icon_source
+        size_hint_y: 0.55
+        fit_mode: "contain"
+        opacity: 1
+
+    Label:
+        text: root.display_name
+        size_hint_y: 0.2
+        font_size: "14sp"
+        bold: True
+        color: 1, 1, 1, 1
+        halign: "center"
+        valign: "middle"
+        text_size: self.size
+        opacity: 1 if not root.is_empty else 0
+
+    Widget:
+        size_hint_y: 0.1
+
+
+<RoundedPopupButton@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0, 0, 0, 0
+
+    color: 1, 1, 1, 1
+    font_size: "19sp"      # ⬅️ BÜYÜTTÜK
+    bold: True
+
+    size_hint_y: None
+    height: dp(58)         # ⬅️ butonla font oranı düzeldi
+
+    canvas.before:
+        Color:
+            rgba: (0.35, 0.35, 0.35, 1) if self.state == "normal" else (0.45, 0.45, 0.45, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(16), dp(16), dp(16), dp(16)]
+
+
+<RoundedPopupButtonSmall@Button>:
+    background_normal: ""
+    background_down: ""
+    background_color: 0, 0, 0, 0
+
+    color: 1, 1, 1, 1
+    font_size: "18sp"
+    bold: True
+
+    size_hint_y: None
+    height: dp(56)
+
+    canvas.before:
+        Color:
+            rgba: (0.35, 0.35, 0.35, 1) if self.state == "normal" else (0.45, 0.45, 0.45, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(16), dp(16), dp(16), dp(16)]
+
+
+
+# ---------------------------------------------------------
+# PROFILE SCREEN
+# ---------------------------------------------------------
+<ProfileScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(12)
+        spacing: dp(12)
+
+        canvas.before:
+            Color:
+                rgba: 0.07, 0.08, 0.10, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # ---------- TOP BAR ----------
+        BoxLayout:
+            size_hint_y: None
+            height: dp(64)
+            spacing: dp(12)
+
+            DarkTab:
+                text: "← Back"
+                font_size: "22sp"
+                bold: True
+                on_release: root.on_back()
+
+            DarkTab:
+                text: root.top_title
+                font_size: "22sp"
+                bold: True
+                state: "down"
+
+        # ---------- CONTENT ----------
+        Card:
+            padding: dp(16)
+
+            GridLayout:
+                id: grid_profiles
+                cols: 5
+                rows: 4
+                spacing: dp(16)
+                padding: dp(16)
+                size_hint: 1, 1
+
+
