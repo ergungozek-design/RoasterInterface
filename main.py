@@ -57,12 +57,15 @@ Window.clearcolor = (0.07, 0.08, 0.10, 1)
 class RoastDashboardApp(App):
     # KV içinden okunuyor
     active_tab = StringProperty("home")
+    home_icon = StringProperty("")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.modbus_client = None  # ✅ GLOBAL Modbus client
 
     def build(self):
+        self.home_icon = resource_path("assets/icons/home.png")
+
         # ---------------- KV dosyaları ----------------
         Builder.load_file(resource_path("ui/common.kv"))
         Builder.load_file(resource_path("ui/home.kv"))
@@ -102,7 +105,7 @@ class RoastDashboardApp(App):
 
             # ✅ QUICK TEST READ (uygulama açılır açılmaz)
             try:
-                vals, err = self.modbus_client.read_holding_n(2020, 2)  # MW2020'den 2 register
+                vals, err = self.modbus_client.read_holding_n(2020, 1)  # MW2020'den 2 register
                 print("[App] TEST READ 2020..:", vals, "err=", err)
             except Exception as e:
                 print("[App] TEST READ EXC:", e)

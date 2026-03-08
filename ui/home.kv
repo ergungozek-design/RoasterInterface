@@ -2,6 +2,9 @@
 #:import dp kivy.metrics.dp
 #:import BeanRoastAnim widgets.bean_roast_anim.BeanRoastAnim
 #:import Clock kivy.clock.Clock
+#:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+
+<HoldArea@ButtonBehavior+Widget>:
 
 <HomeScreen>:
 
@@ -48,5 +51,14 @@
                 dark_source: "assets/beans/bean_dark_transparent.png"
                 intensity: 0.8
 
-        Widget:
+        FloatLayout:
             size_hint_y: 1
+
+            HoldArea:
+                size_hint: None, None
+                size: dp(140), dp(140)
+                pos_hint: {"right": 1, "y": 0}
+                opacity: 0
+
+                on_press: root.start_close_hold()
+                on_release: root.cancel_close_hold()

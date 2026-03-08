@@ -78,11 +78,12 @@ class MakeProfileScreen(Screen):
     # ---------------------------------------------------------------------
 
     # PLC: MW615 (0=STD, 1=DEV)
-    profile_mode = NumericProperty(0)
+    profile_mode = StringProperty("standard")
 
     # PLC: MW608/MW609
     dev_time_min = StringProperty("00")
     dev_time_sec = StringProperty("00")
+    development_time = StringProperty("00:00")
 
     dev_min = StringProperty("")  # MW339 -> canlı gösterim
     dev_sec = StringProperty("")  # MW340 -> canlı gösterim
@@ -196,12 +197,19 @@ class MakeProfileScreen(Screen):
             dmin = int(vals_mode[1] or 0)
             dsec = int(vals_mode[2] or 0)
 
-            self.profile_mode = 1 if pm == 1 else 0
+            self.profile_mode = "dev" if pm == 1 else "standard"
+
+            new_min = self._pad2(dmin)
+            new_sec = self._pad2(dsec)
 
             if self._editing_field != "dev_time_min":
-                self.dev_time_min = self._pad2(dmin)
+                self.dev_time_min = new_min
             if self._editing_field != "dev_time_sec":
-                self.dev_time_sec = self._pad2(dsec)
+                self.dev_time_sec = new_sec
+
+            if self._editing_field not in ("dev_time_min", "dev_time_sec"):
+                self._sync_dev_time()
+
 
         # HER ZAMAN: tüm alanları PLC'den oku
         self._sync_all_fields_from_plc(client)
@@ -281,6 +289,94 @@ class MakeProfileScreen(Screen):
             return f"{i:02d}"
         except Exception:
             return "00"
+
+    def _parse_mmss_to_seconds(self, s: str):
+        try:
+            s = (s or "").strip()
+            if not s:
+                return None
+
+            if ":" not in s:
+                v = int(float(s))
+                return v if v >= 0 else None
+
+            parts = s.split(":")
+            if len(parts) != 2:
+                return None
+
+            mm = int(parts[0].strip())
+            ss = int(parts[1].strip())
+
+            if mm < 0:
+                return None
+            if ss < 0 or ss > 59:
+                return None
+
+            return mm * 60 + ss
+        except Exception:
+            return None
+
+    def _load_seconds_into_fields(self, sec: int):
+        try:
+            sec = int(sec)
+        except Exception:
+            sec = 0
+
+        if sec < 0:
+            sec = 0
+
+        mm = sec // 60
+        ss = sec % 60
+
+        if mm < 0:
+            mm = 0
+        if mm > 99:
+            mm = 99
+        if ss < 0:
+            ss = 0
+        if ss > 59:
+            ss = 59
+
+        self.dev_time_min = f"{mm:02d}"
+        self.dev_time_sec = f"{ss:02d}"
+        self.development_time = f"{mm:02d}:{ss:02d}"
+
+    def _load_mmss_into_fields(self, mmss: str):
+        sec = self._parse_mmss_to_seconds(mmss)
+        if sec is None:
+            self.dev_time_min = "00"
+            self.dev_time_sec = "00"
+            self.development_time = "00:00"
+            return
+
+        self._load_seconds_into_fields(sec)
+
+    def _sync_dev_time(self):
+        try:
+            mm = int(float((self.dev_time_min or "0").replace(",", ".")))
+        except Exception:
+            mm = 0
+
+        try:
+            ss = int(float((self.dev_time_sec or "0").replace(",", ".")))
+        except Exception:
+            ss = 0
+
+        if mm < 0:
+            mm = 0
+        if mm > 99:
+            mm = 99
+        if ss < 0:
+            ss = 0
+        if ss > 59:
+            ss = 59
+
+        self.dev_time_min = f"{mm:02d}"
+        self.dev_time_sec = f"{ss:02d}"
+        self.development_time = f"{mm:02d}:{ss:02d}"
+
+
+
 
     # ---------------- modbus ----------------
     def _get_modbus_client(self):
@@ -392,12 +488,19 @@ class MakeProfileScreen(Screen):
             dmin = int(vals_mode[1] or 0)
             dsec = int(vals_mode[2] or 0)
 
-            self.profile_mode = 1 if pm == 1 else 0
+            self.profile_mode = "dev" if pm == 1 else "standard"
+
+            new_min = self._pad2(dmin)
+            new_sec = self._pad2(dsec)
 
             if self._editing_field != "dev_time_min":
-                self.dev_time_min = self._pad2(dmin)
+                self.dev_time_min = new_min
             if self._editing_field != "dev_time_sec":
-                self.dev_time_sec = self._pad2(dsec)
+                self.dev_time_sec = new_sec
+
+            if self._editing_field not in ("dev_time_min", "dev_time_sec"):
+                self._sync_dev_time()
+
 
         # HER ZAMAN: tüm alanları PLC'den oku (AMA popup açıksa ezme)
         self._sync_all_fields_from_plc(client)
@@ -488,7 +591,7 @@ class MakeProfileScreen(Screen):
                 self._set_state_id(wid, "red")
 
         # 4) Development row (sadece DEV modda görünür)
-        if int(self.profile_mode) == 1:
+        if (self.profile_mode or "standard").strip().lower() == "dev":
             # DEV modda Drop Out basıldıysa dev satırı green olsun
             if self.do_done == 1:
                 for wid in ("dev_min_box", "dev_sec_box"):
@@ -507,14 +610,120 @@ class MakeProfileScreen(Screen):
         self.sc_filled = (self.sc_done == 1)
         self.do_filled = (self.do_done == 1)
 
+    def _sync_all_fields_from_plc(self, client):
+        def set_if_free(field_name: str, value: str):
+            try:
+                if self._editing_field == field_name:
+                    return
+                setattr(self, field_name, value)
+            except Exception:
+                pass
 
+        try:
+            # Hopper/Chaffing
+            hop_time = self._read_one_safe(client, self.MW_HOP_TIME)
+            hop_p1 = self._read_one_safe(client, self.MW_HOP_P1)
+            hop_p2 = self._read_one_safe(client, self.MW_HOP_P2)
+
+            chaff = self._read_one_safe(client, self.MW_CHAFF)
+            ch_p1 = self._read_one_safe(client, self.MW_CH_P1)
+            ch_p2 = self._read_one_safe(client, self.MW_CH_P2)
+
+            ct_time = self._read_one_safe(client, self.MW_CT_TIME)
+            ct_p1 = self._read_one_safe(client, self.MW_CT_P1_READ)
+            ct_p2 = self._read_one_safe(client, self.MW_CT_P2)
+
+            if hop_time is not None:
+                set_if_free("hopper_open_time", str(int(hop_time)))
+            if hop_p1 is not None:
+                set_if_free("hop_p1", str(int(hop_p1)))
+            if hop_p2 is not None:
+                set_if_free("hop_p2", str(int(hop_p2)))
+
+            if chaff is not None:
+                set_if_free("chaffing", str(int(chaff)))
+            if ch_p1 is not None:
+                set_if_free("ch_p1", str(int(ch_p1)))
+            if ch_p2 is not None:
+                set_if_free("ch_p2", str(int(ch_p2)))
+
+            if ct_time is not None:
+                set_if_free("chaffing_time", str(int(ct_time)))
+            if ct_p1 is not None:
+                set_if_free("ct_p1", str(int(ct_p1)))
+            if ct_p2 is not None:
+                set_if_free("ct_p2", str(int(ct_p2)))
+
+            # Temps (x10 -> UI) ; sadece 9999 ise boş göster
+            dd_temp = self._read_one_safe(client, self.MW_DD_TEMP)
+            fc_temp = self._read_one_safe(client, self.MW_FC_TEMP)
+            sc_temp = self._read_one_safe(client, self.MW_SC_TEMP)
+            do_temp = self._read_one_safe(client, self.MW_DO_TEMP)
+
+            if dd_temp is not None:
+                v = int(dd_temp)
+                set_if_free("drop_down_temp", "" if v == 9999 else self._fmt_temp(v / 10.0))
+            if fc_temp is not None:
+                v = int(fc_temp)
+                set_if_free("first_crack_temp", "" if v == 9999 else self._fmt_temp(v / 10.0))
+            if sc_temp is not None:
+                v = int(sc_temp)
+                set_if_free("second_crack_temp", "" if v == 9999 else self._fmt_temp(v / 10.0))
+            if do_temp is not None:
+                v = int(do_temp)
+                set_if_free("drop_out_temp", "" if v == 9999 else self._fmt_temp(v / 10.0))
+
+            # Percents
+            v = self._read_one_safe(client, self.MW_DD_P1)
+            if v is not None:
+                set_if_free("dd_p1", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_DD_P2)
+            if v is not None:
+                set_if_free("dd_p2", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_FC_P1)
+            if v is not None:
+                set_if_free("fc_p1", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_FC_P2)
+            if v is not None:
+                set_if_free("fc_p2", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_SC_P1)
+            if v is not None:
+                set_if_free("sc_p1", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_SC_P2)
+            if v is not None:
+                set_if_free("sc_p2", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_DO_P1)
+            if v is not None:
+                set_if_free("do_p1", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_DO_P2)
+            if v is not None:
+                set_if_free("do_p2", str(int(v)))
+
+            # --- LIVE DEV TIME (MW339/MW340) -> ekranda sürekli göster ---
+            v = self._read_one_safe(client, self.MW_CUR_DEV_MIN)
+            if v is not None:
+                set_if_free("dev_min", str(int(v)))
+
+            v = self._read_one_safe(client, self.MW_CUR_DEV_SEC)
+            if v is not None:
+                set_if_free("dev_sec", str(int(v)))
+
+        except Exception:
+            pass
 
     # ---------------------------------------------------------------------
     # ✅ TÜM alanları PLC'den oku -> textboxlara yaz
     #   - temp alanlarında 0 veya 9999 ise boş göster
     #   - popup açıkken (_editing_field) o alanı EZME
     # ---------------------------------------------------------------------
-    def _sync_all_fields_from_plc(self, client):
+    def _sync_all_fields_from_plc_eski(self, client):
         def set_if_free(field_name: str, value: str):
             try:
                 if self._editing_field == field_name:
@@ -633,10 +842,14 @@ class MakeProfileScreen(Screen):
     # ✅ KV'deki Traditional / Development butonları burayı çağıracak
     def set_profile_mode(self, mode: str):
         m = (mode or "").strip().lower()
-        if m in ("dev", "development"):
-            self.profile_mode = "dev"
-        else:
-            self.profile_mode = "standard"
+
+        if m == "development":
+            m = "dev"
+
+        if m not in ("standard", "dev"):
+            m = "standard"
+
+        self.profile_mode = m
 
     # ✅ DEV TIME popup'ları (ProfileDetailScreen mantığı)
     def open_dev_min(self):
@@ -676,6 +889,7 @@ class MakeProfileScreen(Screen):
                     v = 99
 
             setattr(self, field_name, f"{v:02d}")
+            self._sync_dev_time()
             self._editing_field = ""
 
             # ✅ PLC'ye yaz
@@ -1002,8 +1216,78 @@ class MakeProfileScreen(Screen):
 
         self._confirm("Are you sure you dropped out the coffee?" + self._live_summary(), _yes)
 
-    # ---------------- save / end ----------------
     def save_make_profile(self):
+        name = self._sanitize_name(self.selected_profile) or "Profile"
+        folder = self._sanitize_name(self.selected_folder) or "Default"
+
+        if self.selected_path:
+            fpath = Path(self.selected_path)
+        else:
+            fpath = self._project_root() / "profiles" / folder / f"{name}.json"
+
+        fpath.parent.mkdir(parents=True, exist_ok=True)
+
+        # ProfileDetailScreen ile aynı veri mantığı
+        self._sync_dev_time()
+
+        mode = (self.profile_mode or "standard").strip().lower()
+        if mode == "development":
+            mode = "dev"
+        if mode not in ("standard", "dev"):
+            mode = "standard"
+
+        data = {
+            "profile_name": name,
+            "coffee_origin": self.coffee_origin,
+            "coffee_origin_png": self.coffee_origin_png,
+
+            "drop_down_temp": self._to_float(self.drop_down_temp),
+            "first_crack_temp": self._to_float(self.first_crack_temp),
+            "second_crack_temp": self._to_float(self.second_crack_temp),
+            "drop_out_temp": self._to_float(self.drop_out_temp),
+
+            "hopper_open_time": self._to_int(self.hopper_open_time),
+            "chaffing": self._to_int(self.chaffing),
+            "chaffing_time": self._to_int(self.chaffing_time),
+
+            "dd_p1": self._to_int(self.dd_p1),
+            "dd_p2": self._to_int(self.dd_p2),
+            "hop_p1": self._to_int(self.hop_p1),
+            "hop_p2": self._to_int(self.hop_p2),
+            "ch_p1": self._to_int(self.ch_p1),
+            "ch_p2": self._to_int(self.ch_p2),
+            "ct_p1": self._to_int(self.ct_p1),
+            "ct_p2": self._to_int(self.ct_p2),
+            "fc_p1": self._to_int(self.fc_p1),
+            "fc_p2": self._to_int(self.fc_p2),
+            "sc_p1": self._to_int(self.sc_p1),
+            "sc_p2": self._to_int(self.sc_p2),
+            "do_p1": self._to_int(self.do_p1),
+            "do_p2": self._to_int(self.do_p2),
+
+            "profile_mode": mode,
+            "development_time": (self.development_time or "00:00"),
+            "development_time_sec": self._parse_mmss_to_seconds(self.development_time),
+
+            "dev_time_min": self.dev_time_min,
+            "dev_time_sec": self.dev_time_sec,
+        }
+
+        try:
+            fpath.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+            self.selected_path = str(fpath)
+            short_path = f"{fpath.parent.name} / {fpath.name}"
+            self._toast(f"Profile saved.\n\n{short_path}")
+            print(f"[MakeProfile] SAVED -> {fpath}")
+        except Exception as e:
+            print("[MakeProfile] save error:", e)
+            self._toast("Save error!")
+
+
+
+
+    # ---------------- save / end ----------------
+    def save_make_profile_eski(self):
         name = self._sanitize_name(self.selected_profile) or "Profile"
         folder = self._sanitize_name(self.selected_folder) or "Default"
 
