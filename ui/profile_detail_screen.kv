@@ -624,13 +624,18 @@
                         BoxLayout:
                             orientation: "horizontal"
                             size_hint_y: None
-                            height: dp(42)
+                            height: root.mode_buttons_height  #dp(42)
                             spacing: dp(10)
 
                             Button:
                                 text: "Traditional"
                                 size_hint_x: None
-                                width: dp(150)
+
+                                width: 0 if root.mode_buttons_height == 0 else dp(150)
+                                opacity: 0 if root.mode_buttons_height == 0 else 1
+                                disabled: True if root.mode_buttons_height == 0 else False
+
+                                #width: dp(150)
                                 bold: True
                                 font_size: "16sp"
                                 background_normal: ""
@@ -642,7 +647,12 @@
                             Button:
                                 text: "Development"
                                 size_hint_x: None
-                                width: dp(150)
+
+                                width: 0 if root.mode_buttons_height == 0 else dp(150)
+                                opacity: 0 if root.mode_buttons_height == 0 else 1
+                                disabled: True if root.mode_buttons_height == 0 else False
+
+                                #width: dp(150)
                                 bold: True
                                 font_size: "16sp"
                                 background_normal: ""

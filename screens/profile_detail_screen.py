@@ -15,12 +15,17 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Color, RoundedRectangle
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.properties import NumericProperty
+from kivy.metrics import dp
 
 from services.numeric_keypad import NumericKeypadPopup
 from services.text_keypad import TextKeypadPopup
 
 
 class ProfileDetailScreen(Screen):
+    mode_buttons_height = NumericProperty(0)
+
+
     return_to_files = False
     return_screen = StringProperty("profile")
     active_folder = StringProperty("")
@@ -97,6 +102,8 @@ class ProfileDetailScreen(Screen):
     # Called from ProfileScreen
     # ---------------------------------------------------------
     def load_profile(self, profile_name, data, folder_name=None):
+        self.mode_buttons_height = 0
+
         self.profile_name = profile_name
         self.active_folder = folder_name or ""
         self.loaded_stem = profile_name or ""
