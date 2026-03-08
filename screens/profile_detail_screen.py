@@ -85,6 +85,10 @@ class ProfileDetailScreen(Screen):
 
     def on_enter(self, *args):
         App.get_running_app().active_tab = "profile"
+
+        # ✅ Ekran açılır açılmaz PLC'den mode flag oku
+        self.read_mode_from_plc()
+
         try:
             if "roast_anim" in self.ids and hasattr(self.ids["roast_anim"], "start"):
                 self.ids["roast_anim"].start()
@@ -776,6 +780,26 @@ class ProfileDetailScreen(Screen):
             return bool(r), None
         except Exception as e:
             return False, str(e)
+
+    def read_mode_from_plc(self):
+        client = self._get_modbus_client()
+        if not client:
+            print("[ProfileDetailScreen] Modbus client not found while reading MW615.")
+            return
+
+        vals, err = client.read_holding_n(int(self.MW_MODE_FLAG), 1)  # MW615 oku
+        if vals is None or len(vals) < 1:
+            print(f"[ProfileDetailScreen] MW{self.MW_MODE_FLAG} read error: {err}")
+            return
+
+        mode_raw = int(vals[0])
+        print(f"[ProfileDetailScreen] MW{self.MW_MODE_FLAG} = {mode_raw}")
+
+        if mode_raw == 1:
+            self.set_profile_mode("dev")
+        else:
+            self.set_profile_mode("standard")
+
 
     def _mw_map_from_ui(self):
         """
