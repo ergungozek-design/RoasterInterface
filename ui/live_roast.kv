@@ -3,6 +3,7 @@
 #:import AirflowGauge widgets.airflow_gauge.AirflowGauge
 #:import RoastPlot widgets.roast_plot.RoastPlot
 #:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+#:import StatusLed widgets.status_led.StatusLed
 
 # -----------------------------
 # Plot hold area (invisible)
@@ -320,6 +321,18 @@
 
                         on_press: root._plot_hold_start()
                         on_release: root._plot_hold_cancel()
+
+                    StatusLed:
+                        id: comm_led
+                        size_hint: None, None
+                        size: dp(10), dp(10)
+
+                        x: self.parent.x + self.parent.width - self.width - dp(14)
+                        y: self.parent.y + dp(50)
+
+                        state: "on" if root.comm_ok else "off"
+                        blink: True
+
 
                     # =====================================================
                     # PROFILE OVERLAY (TOP-LEFT, GRID, LABEL ONLY, TRANSPARENT)

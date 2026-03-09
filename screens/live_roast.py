@@ -11,6 +11,8 @@ from kivy.graphics import Color, RoundedRectangle
 
 from services.numeric_keypad import NumericKeypadPopup
 
+import time
+
 
 class LiveRoastScreen(Screen):
     # ---------- KV bindings ----------
@@ -51,6 +53,9 @@ class LiveRoastScreen(Screen):
     make_profile_ready = BooleanProperty(False)
 
     last_read = StringProperty("—")              # debug
+
+    comm_ok = BooleanProperty(False)
+
 
     def __init__(self, **kw):
         # super() öncesi
@@ -135,8 +140,35 @@ class LiveRoastScreen(Screen):
         self._plot_hold_active = False
         self._mode_popup = None
 
+        # ---- reconnect state ----
+        self._comm_error = False
+        self._reconnect_busy = False
+        self._last_reconnect_try = 0.0
+        self._reconnect_interval = 2.0   # saniye
+
+    def _check_connection_before_write(self):
+        self._refresh_client_from_app()
+
+        if self.client is None:
+            self._set_comm_state(False)
+            self.last_read = "No Modbus connection"
+            return False
+
+        return True
+
+    def _refresh_client_from_app(self):
+        try:
+            app = App.get_running_app()
+            self.client = getattr(app, "modbus_client", None)
+        except Exception:
+            self.client = None
+
     def on_enter(self, *args):
         App.get_running_app().active_tab = "live"
+        self._attach_client_and_start()
+
+    def on_leave(self, *args):
+        self._pause_poll()
 
     # ---------- lifecycle ----------
     def on_kv_post(self, *_):
@@ -147,19 +179,12 @@ class LiveRoastScreen(Screen):
         Clock.schedule_once(self._attach_client_and_start, 1.0)
 
     def _attach_client_and_start(self, *_):
-        from kivy.app import App
-
-        if self.client is None:
-            app = App.get_running_app()
-            self.client = getattr(app, "modbus_client", None)
-
-        if self.client is None:
-            print("[LiveRoast] waiting for app.modbus_client ...")
-            return
+        self._refresh_client_from_app()
 
         if self._poll_ev is None:
-            print("[LiveRoast] modbus_client attached -> start poll")
+            print("[LiveRoast] start poll")
             self._resume_poll()
+
 
     def close_serial(self):
         self._pause_poll()
@@ -167,6 +192,56 @@ class LiveRoastScreen(Screen):
             self.client.close()
         except Exception:
             pass
+
+    def _try_reconnect(self):
+        now = time.time()
+
+        if self._reconnect_busy:
+            return False
+
+        if (now - self._last_reconnect_try) < self._reconnect_interval:
+            return False
+
+        self._last_reconnect_try = now
+        self._reconnect_busy = True
+
+        try:
+            app = App.get_running_app()
+
+            # Eski client varsa kapat
+            old_client = getattr(app, "modbus_client", None)
+            if old_client is not None:
+                try:
+                    old_client.close()
+                except Exception:
+                    pass
+
+            # App içindeki reconnect fonksiyonunu çağır
+            new_client = None
+            if hasattr(app, "reconnect_modbus"):
+                new_client = app.reconnect_modbus()
+            elif hasattr(app, "connect_modbus"):
+                new_client = app.connect_modbus()
+
+            self.client = getattr(app, "modbus_client", None)
+
+            if self.client is not None:
+                self._comm_error = False
+                self._set_comm_state(True)
+                self.last_read = "Modbus communication restored"
+                return True
+
+            self._set_comm_state(False)
+            self.last_read = "Reconnect failed: client is None"
+            return False
+
+        except Exception as e:
+            self.last_read = f"Reconnect error: {e}"
+            return False
+
+        finally:
+            self._reconnect_busy = False
+
 
     # ---------- poll control ----------
     def _pause_poll(self):
@@ -181,6 +256,9 @@ class LiveRoastScreen(Screen):
         if self._poll_ev is None:
             Clock.schedule_once(self.poll, 0)
             self._poll_ev = Clock.schedule_interval(self.poll, 1.0)
+
+    def _set_comm_state(self, ok: bool):
+        self.comm_ok = bool(ok)
 
     # ---------- popup helpers ----------
     def _dark_popup(self, content_widget, w=520, h=300):
@@ -392,29 +470,43 @@ class LiveRoastScreen(Screen):
 
     # ---------- COIL501 helpers ----------
     def _set_m501(self, value: int):
+        if not self._check_connection_before_write():
+            return False
+
         try:
             ok, err = self.client.write_single_coil(501, int(value))
             if ok:
                 self.last_read = f"COIL501 <= {int(value)}"
+                self._set_comm_state(True)
             else:
                 self.last_read = f"COIL501 write FAIL: {err}"
+                self._set_comm_state(False)
             return ok
         except Exception as e:
             self.last_read = f"COIL501 write EXC: {e}"
+            self._set_comm_state(False)
             return False
+
 
     def _set_m500(self, value: int):
         """COIL500 yaz (Profile Start/Stop)"""
+        if not self._check_connection_before_write():
+            return False
+
         try:
             ok, err = self.client.write_single_coil(500, int(value))
             if ok:
                 self.last_read = f"COIL500 <= {int(value)}"
+                self._set_comm_state(True)
             else:
                 self.last_read = f"COIL500 write FAIL: {err}"
+                self._set_comm_state(False)
             return ok
         except Exception as e:
             self.last_read = f"COIL500 write EXC: {e}"
+            self._set_comm_state(False)
             return False
+
 
     def open_profile_fullscreen_popup(self):
 
@@ -628,13 +720,24 @@ class LiveRoastScreen(Screen):
         def _ok(val_float, _text):
             reg_value = int(round(val_float * 10.0))  # MW240 x10
 
-            ok, err = self.client.write_single_register(self.REG_SET_WRITE, reg_value)
-            if ok:
-                self.last_read = f"MW{self.REG_SET_WRITE} <= {reg_value} yazıldı"
-            else:
-                self.last_read = f"MW{self.REG_SET_WRITE} write FAIL: {err}"
+            if not self._check_connection_before_write():
+                self._resume_poll()
+                return
+
+            try:
+                ok, err = self.client.write_single_register(self.REG_SET_WRITE, reg_value)
+                if ok:
+                    self.last_read = f"MW{self.REG_SET_WRITE} <= {reg_value} yazıldı"
+                    self._set_comm_state(True)
+                else:
+                    self.last_read = f"MW{self.REG_SET_WRITE} write FAIL: {err}"
+                    self._set_comm_state(False)
+            except Exception as e:
+                self.last_read = f"MW{self.REG_SET_WRITE} write EXC: {e}"
+                self._set_comm_state(False)
 
             self._resume_poll()
+
 
         NumericKeypadPopup(
             title="Set Value (°C)",
@@ -662,6 +765,10 @@ class LiveRoastScreen(Screen):
                 pct = 100
 
             raw = int(pct * 5)  # 0..500
+
+            if not self._check_connection_before_write():
+                self._resume_poll()
+                return
 
             try:
                 ok, err = self.client.write_single_register(self.REG_EXH_WRITE, raw)
@@ -702,6 +809,10 @@ class LiveRoastScreen(Screen):
             reg = getattr(self, "REG_BURNER_WRITE", None)
             if reg is None:
                 self.last_read = "REG_BURNER_WRITE tanımlı değil"
+                self._resume_poll()
+                return
+
+            if not self._check_connection_before_write():
                 self._resume_poll()
                 return
 
@@ -862,19 +973,48 @@ class LiveRoastScreen(Screen):
 
     # ---------- main poll ----------
     def poll(self, _dt):
+        self._refresh_client_from_app()
         if self.client is None:
-            self.last_read = "Modbus client is None"
+            self._set_comm_state(False)
+            self.last_read = "Modbus client is None, trying reconnect..."
+            self._try_reconnect()
             return
 
-        live_vals, err = self.client.read_holding_n(self.LIVE_START, self.LIVE_QTY)
+        try:
+            live_vals, err = self.client.read_holding_n(self.LIVE_START, self.LIVE_QTY)
+        except Exception as e:
+            self._comm_error = True
+            self._set_comm_state(False)
+            self.last_read = f"Read EXC LIVE: {e}"
+            self._try_reconnect()
+            return
+
         if live_vals is None or len(live_vals) < 6:
+            self._comm_error = True
+            self._set_comm_state(False)
             self.last_read = f"Read fail LIVE: {err}"
+            self._try_reconnect()
             return
 
-        tvals, err2 = self.client.read_holding_n(self.TIME_START, self.TIME_QTY)
-        if tvals is None or len(tvals) < self.TIME_QTY:
-            self.last_read = f"Read fail TIME: {err2}"
+
+        try:
+            tvals, err2 = self.client.read_holding_n(self.TIME_START, self.TIME_QTY)
+        except Exception as e:
+            self._comm_error = True
+            self._set_comm_state(False)
+            self.last_read = f"Read EXC TIME: {e}"
+            self._try_reconnect()
             return
+
+        if tvals is None or len(tvals) < self.TIME_QTY:
+            self._comm_error = True
+            self._set_comm_state(False)
+            self.last_read = f"Read fail TIME: {err2}"
+            self._try_reconnect()
+            return
+
+        self._comm_error = False
+        self._set_comm_state(True)
 
         cht_exh_raw = None
 

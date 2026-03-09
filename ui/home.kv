@@ -3,6 +3,7 @@
 #:import BeanRoastAnim widgets.bean_roast_anim.BeanRoastAnim
 #:import Clock kivy.clock.Clock
 #:import ButtonBehavior kivy.uix.behaviors.ButtonBehavior
+#:import StatusLed widgets.status_led.StatusLed
 
 <HoldArea@ButtonBehavior+Widget>:
 
@@ -23,19 +24,53 @@
         Widget:
             size_hint_y: 1
 
+
         BoxLayout:
             size_hint_y: None
             height: dp(180)
 
-            ClickLabel:
-                text: "Sigma Coffee Roaster\nProfesionalty"
-                font_size: "54sp"
-                bold: True
-                color: 0.92, 0.94, 0.98, 1
-                halign: "center"
-                valign: "middle"
-                text_size: self.size
-                on_release: root.go_live()
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+
+                BoxLayout:
+                    orientation: "horizontal"
+                    size_hint: None, None
+                    size: self.minimum_size
+                    spacing: dp(14)
+
+                    ClickLabel:
+                        text: "Sigma Coffee Roaster\nProfesional"
+                        font_size: "54sp"
+                        bold: True
+                        color: 0.92, 0.94, 0.98, 1
+                        halign: "center"
+                        valign: "middle"
+                        text_size: None, None
+                        size_hint: None, None
+                        size: self.texture_size
+                        on_release: root.go_live()
+
+                    StatusLed:
+                        size_hint: None, None
+                        size: dp(10), dp(10)
+                        pos_hint: {"center_y": 0.35}
+                        state: "on" if app.modbus_connected else "off"
+                        blink: True
+
+        #BoxLayout:
+        #    size_hint_y: None
+        #    height: dp(180)
+
+        #    ClickLabel:
+        #        text: "Sigma Coffee Roaster\nProfesional"
+        #        font_size: "54sp"
+        #        bold: True
+        #        color: 0.92, 0.94, 0.98, 1
+        #        halign: "center"
+        #        valign: "middle"
+        #        text_size: self.size
+        #        on_release: root.go_live()
 
         FloatLayout:
             size_hint_y: None
