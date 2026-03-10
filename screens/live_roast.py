@@ -26,6 +26,7 @@ class LiveRoastScreen(Screen):
     set_text = StringProperty("0,0°C")           # MW2020 (x10)
     bean_text = StringProperty("0,0°C")          # MW2021 (x10)
     env_text = StringProperty("0,0°C")           # MW2022 (x10)
+    clock_text = StringProperty("00:00:00")
 
     airflow_ratio = NumericProperty(0.56)
     airflow_text = StringProperty("999 Pa")
@@ -147,6 +148,7 @@ class LiveRoastScreen(Screen):
         self._last_reconnect_try = 0.0
         self._reconnect_interval = 2.0   # saniye
 
+        self.clock_text = datetime.now().strftime("%H:%M:%S")
         self._last_mqtt_publish = 0.0
 
 
@@ -1298,6 +1300,8 @@ class LiveRoastScreen(Screen):
                 print("[MQTT] publish error:", e)
 
             self._last_mqtt_publish = now
+
+        self.clock_text = datetime.now().strftime("%H:%M:%S")
 
         self.last_read = (
             f"SET={setv:.1f} "
