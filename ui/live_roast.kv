@@ -777,7 +777,7 @@
 
                         Widget:
                             size_hint_y: None
-                            height: dp(20)
+                            height: dp(15)
 
                         # ---- DRYING TIME ----
                         Label:
@@ -798,7 +798,7 @@
 
                         Widget:
                             size_hint_y: None
-                            height: dp(20)
+                            height: dp(15)
 
                         # ---- MILLARD TIME ----
                         Label:
@@ -819,7 +819,7 @@
 
                         Widget:
                             size_hint_y: None
-                            height: dp(20)
+                            height: dp(15)
 
                         # ---- DEVELOPMENT TIME ----
                         Label:
@@ -840,7 +840,7 @@
 
                         Widget:
                             size_hint_y: None
-                            height: dp(10)
+                            height: dp(5)
 
                         # ---- ROR ----
                         Label:
@@ -853,19 +853,19 @@
 
                         Widget:
                             size_hint_y: None
-                            height: dp(30)
+                            height: dp(50)
 
                         BoxLayout:
                             orientation: "vertical"
                             size_hint_y: None
-                            height: dp(120)
-                            spacing: dp(20)
+                            height: dp(75)
+                            spacing: dp(15)
 
                             Label:
                                 text: root.ror_text
                                 size_hint_y: None
-                                height: dp(32)
-                                font_size: "34sp"
+                                height: dp(30)
+                                font_size: "36sp"
                                 bold: False
                                 color: 0.95, 0.48, 0.35, 1
                                 halign: "center"
@@ -875,8 +875,8 @@
                             Label:
                                 text: root.ror_max_text
                                 size_hint_y: None
-                                height: dp(32)
-                                font_size: "34sp"
+                                height: dp(30)
+                                font_size: "36sp"
                                 bold: False
                                 color: 0.95, 0.40, 0.35, 1
                                 halign: "center"
@@ -886,8 +886,8 @@
                             Label:
                                 text: root.clock_text
                                 size_hint_y: None
-                                height: dp(32)
-                                font_size: "34sp"
+                                height: dp(30)
+                                font_size: "36sp"
                                 bold: True
                                 color: 0.55, 0.85, 0.65, 1
                                 halign: "center"
@@ -908,26 +908,48 @@
                                 size_hint_y: None
                                 height: 0
 
-                        Widget:
+                        AnchorLayout:
                             size_hint_y: None
-                            height: dp(0)
+                            height: dp(25)
+                            anchor_x: "center"
+                            anchor_y: "top"
+
+                            Button:
+                                text: "Profile Stop" if int(root.m500_state) == 1 else "Profile Start"
+                                font_size: "24sp"
+                                bold: True
+                                size_hint_x: 1
+                                size_hint_y: None
+                                height: dp(70)
+                                background_normal: ""
+                                background_down: ""
+                                background_color: 0, 0, 0, 0
+                                on_release: root.open_profile_fullscreen_popup()
+
+                                canvas.before:
+                                    Color:
+                                        rgba: (0.10, 0.70, 0.20, 1) if int(root.m500_state) == 1 else (0.16, 0.17, 0.20, 1)
+                                    RoundedRectangle:
+                                        pos: self.pos
+                                        size: self.size
+                                        radius: [dp(18), dp(18), dp(18), dp(18)]
 
                         # ---- EXTRA BUTTON (below ROR) ----
-                        Button:
-                            text: "Profile Stop" if int(root.m500_state) == 1 else "Profile Start"
-                            font_size: "24sp"
-                            bold: True
-                            size_hint_y: None
-                            height: dp(70)
-                            background_normal: ""
-                            background_down: ""
-                            background_color: 0, 0, 0, 0
-                            on_release: root.open_profile_fullscreen_popup()
+                        #Button:
+                        #    text: "Profile Stop" if int(root.m500_state) == 1 else "Profile Start"
+                        #    font_size: "24sp"
+                        #    bold: True
+                        #    size_hint_y: None
+                        #    height: dp(70)
+                        #    background_normal: ""
+                        #    background_down: ""
+                        #    background_color: 0, 0, 0, 0
+                        #    on_release: root.open_profile_fullscreen_popup()
 
-                            canvas.before:
-                                Color:
-                                    rgba: (0.10, 0.70, 0.20, 1) if int(root.m500_state) == 1 else (0.16, 0.17, 0.20, 1)
-                                RoundedRectangle:
-                                    pos: self.pos
-                                    size: self.size
-                                    radius: [dp(18), dp(18), dp(18), dp(18)]
+                        #    canvas.before:
+                        #        Color:
+                        #            rgba: (0.10, 0.70, 0.20, 1) if int(root.m500_state) == 1 else (0.16, 0.17, 0.20, 1)
+                        #        RoundedRectangle:
+                        #            pos: self.pos
+                        #            size: self.size
+                        #            radius: [dp(18), dp(18), dp(18), dp(18)]

@@ -33,7 +33,7 @@ from kivy.clock import Clock
 
 import sys
 import os
-
+import time
 
 def resource_path(relative_path):
     try:
@@ -85,6 +85,11 @@ class RoastDashboardApp(App):
         self.modbus_connected = False
         self._comm_blink_ev = None
 
+        # ---- inactivity timeout ----
+        self._last_activity_time = time.time()
+        self._idle_timeout_sec = 900
+        self._idle_check_ev = None
+
     def start_comm_blink(self):
         if self._comm_blink_ev is None:
             self._comm_blink_ev = Clock.schedule_interval(self._toggle_comm_indicator, 0.5)
@@ -100,12 +105,37 @@ class RoastDashboardApp(App):
     def _toggle_comm_indicator(self, dt):
         self.comm_indicator_on = not self.comm_indicator_on
 
+    def _on_user_activity(self, *args):
+        self._last_activity_time = time.time()
+        return False
+
     def _set_comm_indicator(self, ok: bool):
         self.modbus_connected = bool(ok)
         if self.modbus_connected:
             self.comm_indicator_color = [0, 1, 0, 1]
         else:
             self.comm_indicator_color = [1, 0, 0, 1]
+
+    def _check_idle_timeout(self, dt):
+        try:
+            if (time.time() - self._last_activity_time) < self._idle_timeout_sec:
+                return
+
+            if not self.root:
+                return
+
+            if self.root.current == "home":
+                self._last_activity_time = time.time()
+                return
+
+            print("[App] idle timeout -> returning to home")
+            self.active_tab = "home"
+            self.root.current = "home"
+            self._last_activity_time = time.time()
+
+        except Exception as e:
+            print("[App] idle timeout error:", e)
+
 
     def start_modbus_watchdog(self):
         from kivy.clock import Clock
@@ -264,6 +294,10 @@ class RoastDashboardApp(App):
         self.start_modbus_watchdog()
         self.start_comm_blink()
 
+        # ---------------- inactivity timeout ----------------
+        Window.bind(on_touch_down=self._on_user_activity)
+        Window.bind(on_key_down=self._on_user_activity)
+        self._idle_check_ev = Clock.schedule_interval(self._check_idle_timeout, 1.0)
 
         self.mqtt = MQTTService(
             broker="08bb54f5ee234a86ba2d3e07280da8ed.s1.eu.hivemq.cloud",
@@ -275,6 +309,7 @@ class RoastDashboardApp(App):
 
 
         sm.current = "home"
+        self._last_activity_time = time.time()
         return sm
 
     def show_shutdown_popup(self):
@@ -326,6 +361,13 @@ class RoastDashboardApp(App):
             if self._modbus_watchdog_ev is not None:
                 self._modbus_watchdog_ev.cancel()
                 self._modbus_watchdog_ev = None
+        except Exception:
+            pass
+
+        try:
+            if self._idle_check_ev is not None:
+                self._idle_check_ev.cancel()
+                self._idle_check_ev = None
         except Exception:
             pass
 
