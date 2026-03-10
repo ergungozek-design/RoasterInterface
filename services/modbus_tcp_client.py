@@ -23,33 +23,26 @@ class ModbusTCPClient:
         self._tx_id = 1
 
     def connect(self):
-        """Open TCP socket. Raise on failure."""
-        import socket
-
-        # önce varsa kapat
         try:
             self.close()
-        except Exception:
-            pass
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.settimeout(self.timeout)
-
-        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.settimeout(self.timeout)
             self.sock.connect((self.host, self.port))
-            self._connected = True
             return True
-        except Exception as e:
-            self._connected = False
+
+        except Exception:
             try:
-                self.sock.close()
+                if self.sock:
+                    self.sock.close()
             except Exception:
                 pass
+
             self.sock = None
-            raise e
+            return False
 
 
-#    def connect(self) -> bool:
+#    def connect_eski(self) -> bool:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(self.timeout)

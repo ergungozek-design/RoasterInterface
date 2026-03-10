@@ -3,7 +3,6 @@ from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.factory import Factory
 from kivy.uix.screenmanager import ScreenManager, FadeTransition
-from kivy.properties import StringProperty
 
 from screens.home_screen import HomeScreen
 from screens.live_roast import LiveRoastScreen
@@ -20,6 +19,7 @@ from widgets.status_led import StatusLed
 
 # ✅ Modbus
 from services.modbus_tcp_client import ModbusTCPClient
+from services.mqtt_service import MQTTService
 from widgets.status_anim import StatusAnim
 
 from kivy.uix.popup import Popup
@@ -73,6 +73,7 @@ class RoastDashboardApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.modbus_client = None  # ✅ GLOBAL Modbus client
+        self.mqtt = None
 
         # ✅ Modbus connection settings
         self.modbus_host = "192.168.1.50"
@@ -263,6 +264,16 @@ class RoastDashboardApp(App):
         self.start_modbus_watchdog()
         self.start_comm_blink()
 
+
+        self.mqtt = MQTTService(
+            broker="08bb54f5ee234a86ba2d3e07280da8ed.s1.eu.hivemq.cloud",
+            port=8883,
+            username="roaster",
+            password="CemGozek1!",
+        )
+        self.mqtt.connect()
+
+
         sm.current = "home"
         return sm
 
@@ -329,6 +340,12 @@ class RoastDashboardApp(App):
         try:
             if self.modbus_client:
                 self.modbus_client.close()
+        except Exception:
+            pass
+
+        try:
+            if self.mqtt is not None:
+                self.mqtt.disconnect()
         except Exception:
             pass
 

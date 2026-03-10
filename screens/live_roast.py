@@ -12,6 +12,7 @@ from kivy.graphics import Color, RoundedRectangle
 from services.numeric_keypad import NumericKeypadPopup
 
 import time
+from datetime import datetime
 
 
 class LiveRoastScreen(Screen):
@@ -145,6 +146,9 @@ class LiveRoastScreen(Screen):
         self._reconnect_busy = False
         self._last_reconnect_try = 0.0
         self._reconnect_interval = 2.0   # saniye
+
+        self._last_mqtt_publish = 0.0
+
 
     def _check_connection_before_write(self):
         self._refresh_client_from_app()
@@ -1178,6 +1182,8 @@ class LiveRoastScreen(Screen):
         # time total sec (plot X)
         tsec = max(0, r_min * 60 + r_sec)
 
+
+
         # KV bindings (right panel)
         self.roasttime_text = f"{r_min:02d}:{r_sec:02d}"
         self.drytime_text = f"{dry_min:02d}:{dry_sec:02d}  {dry_pct} %"
@@ -1266,6 +1272,32 @@ class LiveRoastScreen(Screen):
                 plot.ror_series = self.rors[:]
         except Exception:
             pass
+
+        # ---------- MQTT publish every 5 sec ----------
+        now = time.time()
+
+        if now - self._last_mqtt_publish >= 5:
+
+            try:
+                app = App.get_running_app()
+
+                if app.mqtt and app.mqtt.connected:
+                    payload = {
+                        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "bean_temp": bt,
+                        "exhaust_temp": ex_temp,
+                        "set_temp": setv,
+                        "time_sec": tsec
+                    }
+
+                    app.mqtt.publish("TOPIC1", payload)
+
+                    print("[MQTT] publish:", payload)
+
+            except Exception as e:
+                print("[MQTT] publish error:", e)
+
+            self._last_mqtt_publish = now
 
         self.last_read = (
             f"SET={setv:.1f} "
