@@ -32,6 +32,29 @@ class MQTTService:
         )
 
         self.client.username_pw_set(self.username, self.password)
+        self.client.tls_set(tls_version=ssl.PROTOCOL_TLS)
+        self.client.on_connect = self._on_connect
+
+        try:
+            self.client.connect(self.broker, self.port)
+            self.client.loop_start()
+            print("[MQTT] connect() called")
+            return True
+
+        except Exception as e:
+            print(f"[MQTT] Connection failed: {e}")
+            self.connected = False
+            self.client = None
+            return False
+
+    def connect_eski(self):
+
+        self.client = mqtt_client.Client(
+            mqtt_client.CallbackAPIVersion.VERSION1,
+            client_id="roaster_app"
+        )
+
+        self.client.username_pw_set(self.username, self.password)
 
         self.client.tls_set(tls_version=ssl.PROTOCOL_TLS)
 
