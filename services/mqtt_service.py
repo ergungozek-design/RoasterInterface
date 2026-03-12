@@ -47,7 +47,7 @@ class MQTTService:
             self.client = None
             return False
 
-    def connect_eski(self):
+    def connect_eski_fonk(self):
 
         self.client = mqtt_client.Client(
             mqtt_client.CallbackAPIVersion.VERSION1,
