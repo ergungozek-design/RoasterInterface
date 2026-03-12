@@ -715,6 +715,30 @@ class ProfileScreen(Screen):
     # Back
     # ---------------------------------------------------------
     def on_back(self):
+        # klasör içindeysek önce folder listesine dön
+        if self.current_folder:
+            self.show_folders()
+            return
+
+        # root seviyedeysek hangi modda olursa olsun live'a dön
+        self.make_profile_mode = False
+        self.current_folder = ""
+        self.top_title = "PROFILE"
+        self._keep_mode = False
+        self._keep_folder = ""
+
+        if self.manager:
+            if self.manager.has_screen("live"):
+                self.manager.current = "live"
+            elif self.manager.has_screen("live_roast"):
+                self.manager.current = "live_roast"
+            else:
+                try:
+                    self.manager.current = self.manager.screen_names[0]
+                except Exception:
+                    pass
+
+    def on_back_eski(self):
         # ✅ Make Profile modunda:
         # - klasör içindeysek folder listesine dön
         # - folder listesinde isek make_profile ekranına dön

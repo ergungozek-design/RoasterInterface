@@ -62,7 +62,14 @@ class RoastPlot(Widget):
 
         )
 
-    def _draw_text(self, text, x, y, font_size=12, color=(1, 1, 1, 0.9)):
+    def _draw_text(self, text, x, y, font_size=12, color=(1, 1, 1, 1)):
+        lbl = CoreLabel(text=text, font_size=font_size)
+        lbl.refresh()
+
+        Color(*color)
+        Rectangle(texture=lbl.texture, pos=(x, y), size=lbl.texture.size)
+
+    def _draw_text_eski(self, text, x, y, font_size=12, color=(1, 1, 1, 0.9)):
         lbl = CoreLabel(text=text, font_size=font_size, color=color)
         lbl.refresh()
         Rectangle(texture=lbl.texture, pos=(x, y), size=lbl.texture.size)
@@ -93,10 +100,15 @@ class RoastPlot(Widget):
             minor = (0.25, 0.28, 0.36, 0.20)
             major = (0.50, 0.58, 0.74, 0.55)
 
-            y_major_lbl = (0.92, 0.94, 0.98, 0.95)
-            y_minor_lbl = (0.78, 0.82, 0.88, 0.85)
-            x_minor_lbl = (0.78, 0.82, 0.88, 0.90)
-            x_major_lbl = (0.94, 0.96, 0.99, 0.95)
+            y_major_lbl = (1, 1, 1, 1)
+            y_minor_lbl = (1, 1, 1, 1)
+            x_minor_lbl = (1, 1, 1, 1)
+            x_major_lbl = (1, 1, 1, 1)
+
+            #y_major_lbl = (0.92, 0.94, 0.98, 0.95)
+            #y_minor_lbl = (0.78, 0.82, 0.88, 0.85)
+            #x_minor_lbl = (0.78, 0.82, 0.88, 0.90)
+            #x_major_lbl = (0.94, 0.96, 0.99, 0.95)
 
             def xf(sec):
                 sec = max(0.0, min(self.W, float(sec)))

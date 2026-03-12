@@ -43,7 +43,7 @@ class LiveRoastScreen(Screen):
     miltime_text = StringProperty("00:03")
     devtime_text = StringProperty("00:04")
     ror_text = StringProperty("0,0 °C")
-    ror_max_text = StringProperty("0,0 °C (max)")
+    ror_max_text = StringProperty("0,0 °C max")
     C_sec_text = StringProperty("0,0 °C/sn")
 
     profile_mode = StringProperty("standard")   # "standard" veya "dev"
@@ -1137,7 +1137,7 @@ class LiveRoastScreen(Screen):
         # MW2041 -> ROR MAX (x10)
         ror_max_raw = int(tvals[15])
         ror_max = ror_max_raw / 10.0
-        self.ror_max_text = f"{self._fmt_tr_num(ror_max)} °C (max)"
+        self.ror_max_text = f"{self._fmt_tr_num(ror_max)} °C max"
 
         # MW2042 -> C/sec (x10)
         csec_raw = int(tvals[16])
