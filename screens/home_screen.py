@@ -9,6 +9,7 @@ from kivy.uix.label import Label
 
 #to make exe
 #pyinstaller --onefile --windowed --noconfirm --add-data "ui;ui" --add-data "assets;assets" --add-data "profiles;profiles" --hidden-import "widgets.bean_roast_anim" main.py
+#.\.venv\Scripts\Activate.ps1
 
 class HomeScreen(Screen):
     def __init__(self, **kwargs):
