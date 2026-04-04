@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 from pathlib import Path
 
 from kivy.app import App
@@ -522,9 +523,17 @@ class ProfileDetailScreen(Screen):
     # ---------------------------------------------------------
     def _project_root(self) -> Path:
         try:
+            if getattr(sys, "frozen", False):
+                return Path(sys.executable).resolve().parent
             return Path(__file__).resolve().parents[1]
         except Exception:
             return Path(".").resolve()
+
+    #def _project_root(self) -> Path:
+    #    try:
+    #        return Path(__file__).resolve().parents[1]
+    #    except Exception:
+    #        return Path(".").resolve()
 
     def _sanitize_name(self, s: str) -> str:
         s = (s or "").strip()

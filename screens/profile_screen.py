@@ -1,5 +1,6 @@
 import json
 import shutil
+import sys
 from pathlib import Path
 
 from kivy.app import App
@@ -117,7 +118,12 @@ class ProfileScreen(Screen):
     # Paths
     # ---------------------------------------------------------
     def _project_root(self) -> Path:
+        if getattr(sys, "frozen", False):
+            return Path(sys.executable).resolve().parent
         return Path(__file__).resolve().parent.parent
+
+#    def _project_root(self) -> Path:
+#        return Path(__file__).resolve().parent.parent
 
     def _profiles_dir(self) -> Path:
         pdir = self._project_root() / "profiles"
