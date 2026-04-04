@@ -71,6 +71,7 @@ class MakeProfileScreen(Screen):
     MW_CT_P1_READ = 2046
     MW_CT_P1_WRITE = 703
 
+    REG_COOLING_CMD = 2201
 
     # ---------------------------------------------------------------------
     # ✅ STD / DEV MODE (ProfileDetailScreen ile aynı mantık)
@@ -1219,11 +1220,28 @@ class MakeProfileScreen(Screen):
                 #self._write_coil_safe(client, 501, 0)
                 #self._write_coil_safe(client, 500, 0)
 
+            # ✅ BURASI DEGISTI
+            self._confirm(
+                "Drop Out saved.",
+                lambda: self._confirm(
+                    "Do You Want to Run Cooling Process ?",
+                    lambda: self._run_cooling_process()
+                )
+            )
 
-            self._toast("Drop Out saved.")
             self._poll_tick(0)
 
         self._confirm("Are you sure you dropped out the coffee?" + self._live_summary(), _yes)
+
+
+    def _run_cooling_process(self):
+        client = self._get_modbus_client()
+        if not client:
+            self._toast("Cooling command failed")
+            return
+
+        self._write_reg_safe(client, self.REG_COOLING_CMD, 1)
+        self._toast("Cooling started")
 
     def save_make_profile(self):
         name = self._sanitize_name(self.selected_profile) or "Profile"
